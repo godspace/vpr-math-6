@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 4. Анализ диаграмм</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --bar-color: #7f8c8d;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        .task-text {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        /* Контейнер диаграммы */
+        .chart-wrapper {
+            display: flex;
+            height: 250px;
+            margin: 0 auto 2rem;
+            padding-left: 60px; /* Добавили гарантированное место слева */
+            padding-right: 1rem;
+            position: relative;
+            max-width: 400px;
+        }
+
+        /* Ось Y (число учеников) */
+        .y-axis {
+            display: flex;
+            flex-direction: column-reverse; /* От 0 до 10 снизу вверх */
+            justify-content: space-between;
+            padding-right: 10px;
+            border-right: 2px solid #333;
+            color: #555;
+            font-size: 0.9rem;
+            font-weight: bold;
+            width: 30px;
+        }
+
+        /* Зона столбцов */
+        .bars-area {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            flex-grow: 1;
+            position: relative;
+            border-bottom: 2px solid #333;
+            /* Горизонтальные линии сетки */
+            background-image: linear-gradient(to top, transparent 96%, #e0e0e0 4%);
+            background-size: 100% 10%; /* 10 делений */
+        }
+
+        /* Сами столбцы */
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 15%;
+            height: 100%;
+            justify-content: flex-end;
+        }
+        .bar {
+            width: 100%;
+            background-color: var(--bar-color);
+            border: 1px solid #333;
+            border-bottom: none;
+            transition: height 0.5s ease;
+        }
+        .x-label {
+            margin-top: 8px;
+            font-weight: bold;
+            color: #333;
+            position: absolute;
+            bottom: -30px;
+        }
+
+        /* Интерфейс ввода */
+        .controls {
+            margin-top: 2.5rem;
+        }
+        input[type="number"] {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            width: 150px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 200px;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Подпись осей */
+        .axis-title-y {
+            position: absolute;
+            left: 0; /* Теперь прижимаем строго к левому краю контейнера */
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 4</h2>
+    <div class="task-text">
+        На диаграмме показаны результаты контрольной работы по математике в 6 «В» классе. На вертикальной оси указано число учеников, получивших отметки «2», «3», «4» или «5». <b>Сколько всего учеников писали эту контрольную работу?</b>
+    </div>
+    
+    <div class="chart-wrapper">
+        <div class="axis-title-y">Число учеников</div>
+        <div class="y-axis" id="y-axis">
+            </div>
+        <div class="bars-area" id="bars-area">
+            </div>
+    </div>
+    
+    <div class="controls">
+        <input type="number" id="answer-input" placeholder="Ответ" autocomplete="off">
+        <br>
+        <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    </div>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let currentAnswer = 0;
+    const MAX_STUDENTS_PER_GRADE = 10; // Максимальное значение на оси Y
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    function generateTask() {
+        // Сброс интерфейса
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('answer-input').disabled = false;
+        document.getElementById('check-btn').style.display = 'inline-block';
+        document.getElementById('answer-input').focus();
+
+        // Отрисовка оси Y (от 0 до 10)
+        const yAxis = document.getElementById('y-axis');
+        yAxis.innerHTML = '';
+        for (let i = 0; i <= MAX_STUDENTS_PER_GRADE; i++) {
+            const label = document.createElement('div');
+            label.textContent = i;
+            // Скрываем нечетные числа, чтобы ось не была перегружена
+            if (i % 2 !== 0 && i !== MAX_STUDENTS_PER_GRADE && i !== 0) {
+                label.style.visibility = 'hidden'; 
+            }
+            yAxis.appendChild(label);
+        }
+
+        // Генерация данных для оценок
+        const grades = [
+            { label: '«2»', count: rand(0, 3) },
+            { label: '«3»', count: rand(3, 8) },
+            { label: '«4»', count: rand(4, 10) },
+            { label: '«5»', count: rand(2, 7) }
+        ];
+
+        // Считаем правильный ответ
+        currentAnswer = grades.reduce((sum, grade) => sum + grade.count, 0);
+
+        // Отрисовка столбцов
+        const barsArea = document.getElementById('bars-area');
+        barsArea.innerHTML = '';
+        
+        grades.forEach(grade => {
+            const container = document.createElement('div');
+            container.className = 'bar-container';
+
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            // Вычисляем высоту в процентах относительно максимума оси Y
+            const heightPercent = (grade.count / MAX_STUDENTS_PER_GRADE) * 100;
+            
+            // Анимация появления: сначала высота 0, затем через небольшую паузу нужная высота
+            bar.style.height = '0%';
+            setTimeout(() => {
+                bar.style.height = `${heightPercent}%`;
+            }, 100);
+
+            const xLabel = document.createElement('div');
+            xLabel.className = 'x-label';
+            xLabel.textContent = grade.label;
+
+            container.appendChild(bar);
+            container.appendChild(xLabel);
+            barsArea.appendChild(container);
+        });
+    }
+
+    function checkAnswer() {
+        const inputStr = document.getElementById('answer-input').value;
+        const feedback = document.getElementById('feedback-display');
+        
+        if (inputStr === '') {
+            feedback.textContent = 'Введите ответ!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        const userAnswer = parseInt(inputStr, 10);
+
+        if (userAnswer === currentAnswer) {
+            feedback.textContent = 'Верно! Молодец.';
+            feedback.style.color = 'var(--success)';
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[4] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+
+        } else {
+            feedback.textContent = 'Ошибка. Внимательно посчитай столбцы!';
+            feedback.style.color = 'var(--error)';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

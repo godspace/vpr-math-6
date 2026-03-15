@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 10. Логические утверждения</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: left;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 0;
+        }
+        .task-condition {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            background-color: #e3f2fd;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            font-weight: bold;
+        }
+        .task-instruction {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #555;
+        }
+        
+        /* Стили для чекбоксов */
+        .statements-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .statement-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 1.15rem;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        .statement-label:hover {
+            background-color: #f5f5f5;
+        }
+        .statement-label input[type="checkbox"] {
+            margin-top: 5px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+        .statement-text {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .controls {
+            text-align: center;
+        }
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            max-width: 250px;
+            margin-bottom: 0.5rem;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 10</h2>
+    
+    <div class="task-condition" id="condition-display">
+        </div>
+    
+    <div class="task-instruction">
+        Выберите все верные утверждения (их может быть несколько):
+    </div>
+    
+    <div class="statements-list" id="statements-container">
+        </div>
+    
+    <div class="controls">
+        <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+        <div class="feedback" id="feedback-display"></div>
+    </div>
+</div>
+
+<script>
+    let correctAnswers = []; // Массив с индексами правильных утверждений
+    
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    
+    const families = ["Ивановых", "Петровых", "Смирновых", "Михайловых", "Соколовых"];
+
+    // Функция для правильного склонения слов
+    const getBoyWord = (n) => n === 1 ? "мальчик" : (n < 5 ? "мальчика" : "мальчиков");
+    const getGirlWord = (n) => n === 1 ? "девочка" : (n < 5 ? "девочки" : "девочек");
+    const getChildWord = (n) => n === 1 ? "ребёнок" : (n < 5 ? "ребёнка" : "детей");
+
+    function generateTask() {
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('check-btn').style.display = 'inline-block';
+        correctAnswers = [];
+
+        // 1. Генерируем состав семьи
+        const familyName = families[rand(0, families.length - 1)];
+        const boysCount = rand(1, 4);
+        const girlsCount = rand(1, 4);
+        const totalChildren = boysCount + girlsCount;
+
+        // Выводим условие
+        document.getElementById('condition-display').innerHTML = 
+            `В семье ${familyName} ${totalChildren} ${getChildWord(totalChildren)}: ` +
+            `${boysCount} ${getBoyWord(boysCount)} и ${girlsCount} ${getGirlWord(girlsCount)}.`;
+
+        // 2. Генератор логических утверждений
+        let statementsPool = [];
+
+        // Тип 1: Количество сестер у девочки
+        let guessSisters = rand(0, 3);
+        statementsPool.push({
+            text: `У каждой девочки в семье ${familyName} есть ${guessSisters} ` + (guessSisters === 1 ? 'сестра' : (guessSisters === 0 ? 'сестёр' : 'сестры')) + `.`,
+            isTrue: (girlsCount - 1) === guessSisters
+        });
+
+        // Тип 2: Сравнение числа мальчиков и девочек
+        let isMoreBoys = rand(0, 1) === 0;
+        if (isMoreBoys) {
+            statementsPool.push({
+                text: `Мальчиков в семье ${familyName} больше, чем девочек.`,
+                isTrue: boysCount > girlsCount
+            });
+        } else {
+            statementsPool.push({
+                text: `Девочек в семье ${familyName} больше, чем мальчиков.`,
+                isTrue: girlsCount > boysCount
+            });
+        }
+
+        // Тип 3: Равенство братьев и сестер у мальчика
+        statementsPool.push({
+            text: `У каждого мальчика в семье ${familyName} сестёр столько же, сколько и братьев.`,
+            isTrue: girlsCount === (boysCount - 1)
+        });
+
+        // Тип 4: Неравенства ("не меньше", "меньше")
+        let guessThreshold = rand(2, 4);
+        let checkType = rand(0, 1);
+        if (checkType === 0) {
+            statementsPool.push({
+                text: `Дочерей у ${familyName} не меньше ${guessThreshold}.`,
+                isTrue: girlsCount >= guessThreshold
+            });
+        } else {
+            statementsPool.push({
+                text: `Сыновей у ${familyName} меньше ${guessThreshold}.`,
+                isTrue: boysCount < guessThreshold
+            });
+        }
+
+        // 3. Выводим утверждения в интерфейс
+        const container = document.getElementById('statements-container');
+        container.innerHTML = '';
+        
+        statementsPool.forEach((stmt, index) => {
+            if (stmt.isTrue) correctAnswers.push(index);
+            
+            const label = document.createElement('label');
+            label.className = 'statement-label';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.dataset.index = index;
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'statement-text';
+            textSpan.textContent = ` ${index + 1}) ` + stmt.text;
+            
+            label.appendChild(checkbox);
+            label.appendChild(textSpan);
+            container.appendChild(label);
+        });
+
+        // Защита от сценария, где все 4 утверждения ложные (для ВПР это нетипично)
+        if (correctAnswers.length === 0) {
+            generateTask(); // Перегенерируем, пока не появится хотя бы одно верное
+        }
+    }
+
+    function checkAnswer() {
+        const feedback = document.getElementById('feedback-display');
+        const checkboxes = document.querySelectorAll('.statement-label input[type="checkbox"]');
+        
+        let userAnswers = [];
+        checkboxes.forEach(cb => {
+            if (cb.checked) userAnswers.push(parseInt(cb.dataset.index));
+        });
+
+        if (userAnswers.length === 0) {
+            feedback.textContent = 'Выберите хотя бы одно утверждение!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        // Проверяем, совпадают ли массивы (по длине и содержимому)
+        let isCorrect = userAnswers.length === correctAnswers.length && 
+                        userAnswers.every(val => correctAnswers.includes(val));
+
+        if (isCorrect) {
+            feedback.textContent = 'Верно! Отличная логика.';
+            feedback.style.color = 'var(--success)';
+            document.getElementById('check-btn').style.display = 'none';
+
+            // Блокируем чекбоксы
+            checkboxes.forEach(cb => cb.disabled = true);
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[10] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+
+        } else {
+            feedback.textContent = 'Ошибка. Прочитай условие ещё раз внимательно!';
+            feedback.style.color = 'var(--error)';
+            
+            // Сбрасываем чекбоксы
+            checkboxes.forEach(cb => cb.checked = false);
+        }
+    }
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

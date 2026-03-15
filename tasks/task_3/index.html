@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 3. Нахождение числа по его дроби</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .task-text {
+            font-size: 1.5rem;
+            margin: 1.5rem 0;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        /* Стили для визуальной подсказки */
+        .visual-hint-container {
+            margin: 1.5rem 0;
+            display: none; /* Скрыта по умолчанию, показывается при ошибке или кнопке */
+            flex-direction: column;
+            align-items: center;
+        }
+        .fraction-bar {
+            display: flex;
+            width: 100%;
+            height: 40px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        .fraction-segment {
+            flex: 1;
+            border-right: 1px solid #333;
+        }
+        .fraction-segment:last-child {
+            border-right: none;
+        }
+        .segment-filled {
+            background-color: var(--primary);
+            opacity: 0.8;
+        }
+        .segment-empty {
+            background-color: #e0e0e0;
+        }
+        .hint-text {
+            font-size: 0.95rem;
+            color: #555;
+            margin-top: 0.5rem;
+        }
+        .show-hint-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        input[type="number"] {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            width: 150px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 3</h2>
+    
+    <div class="task-text" id="task-display"></div>
+    
+    <button class="show-hint-btn" onclick="showHint()">Показать визуальную подсказку</button>
+    
+    <div class="visual-hint-container" id="hint-container">
+        <div class="fraction-bar" id="fraction-bar"></div>
+        <div class="hint-text" id="hint-text"></div>
+    </div>
+    
+    <br>
+    <input type="number" id="answer-input" placeholder="Ответ" autocomplete="off">
+    <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let currentAnswer = 0;
+    let currentTask = {};
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // Словарь дробей с правильными окончаниями
+    const fractions = [
+        { a: 1, b: 2, text: "половина", verb: "равна" },
+        { a: 1, b: 3, text: "треть", verb: "равна" },
+        { a: 2, b: 3, text: "две трети", verb: "равны" },
+        { a: 1, b: 4, text: "четверть", verb: "равна" },
+        { a: 3, b: 4, text: "три четверти", verb: "равны" },
+        { a: 2, b: 5, text: "две пятых", verb: "равны" },
+        { a: 3, b: 5, text: "три пятых", verb: "равны" },
+        { a: 4, b: 5, text: "четыре пятых", verb: "равны" },
+        { a: 5, b: 6, text: "пять шестых", verb: "равны" },
+        { a: 3, b: 7, text: "три седьмых", verb: "равны" }
+    ];
+
+    function generateTask() {
+        // Сброс интерфейса
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('answer-input').disabled = false;
+        document.getElementById('check-btn').style.display = 'block';
+        document.getElementById('hint-container').style.display = 'none';
+        document.getElementById('answer-input').focus();
+
+        // Выбираем случайную дробь
+        const fractionTemplate = fractions[rand(0, fractions.length - 1)];
+        
+        // Генерируем "вес" одной части (от 15 до 50)
+        const unitWeight = rand(15, 50);
+        
+        // Вычисляем значение части (C) и искомое число (X)
+        const partValue = unitWeight * fractionTemplate.a;
+        currentAnswer = unitWeight * fractionTemplate.b;
+        
+        currentTask = {
+            a: fractionTemplate.a,
+            b: fractionTemplate.b,
+            partValue: partValue,
+            total: currentAnswer
+        };
+
+        // Формируем текст с учетом русской грамматики
+        document.getElementById('task-display').innerHTML = 
+            `Найдите число, ${fractionTemplate.text} которого ${fractionTemplate.verb} <b>${partValue}</b>.`;
+    }
+
+    function showHint() {
+        const hintContainer = document.getElementById('hint-container');
+        const bar = document.getElementById('fraction-bar');
+        const hintText = document.getElementById('hint-text');
+        
+        hintContainer.style.display = 'flex';
+        bar.innerHTML = ''; // Очищаем старый бар
+        
+        // Рисуем квадратики
+        for (let i = 0; i < currentTask.b; i++) {
+            const segment = document.createElement('div');
+            segment.classList.add('fraction-segment');
+            if (i < currentTask.a) {
+                segment.classList.add('segment-filled');
+            } else {
+                segment.classList.add('segment-empty');
+            }
+            bar.appendChild(segment);
+        }
+        
+        // Текстовая расшифровка
+        let partsWord = currentTask.a === 1 ? "часть" : "части";
+        if (currentTask.a >= 5) partsWord = "частей"; // Для "пять шестых"
+        
+        hintText.innerHTML = `Синие квадратики (${currentTask.a} ${partsWord}) равны <b>${currentTask.partValue}</b>.<br>Узнай, сколько весит один квадратик, и умножь на ${currentTask.b}.`;
+    }
+
+    function checkAnswer() {
+        const inputStr = document.getElementById('answer-input').value;
+        const feedback = document.getElementById('feedback-display');
+        
+        if (inputStr === '') {
+            feedback.textContent = 'Введите ответ!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        const userAnswer = parseInt(inputStr, 10);
+
+        if (userAnswer === currentAnswer) {
+            feedback.textContent = 'Верно! Отличная работа.';
+            feedback.style.color = 'var(--success)';
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[3] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+
+        } else {
+            feedback.textContent = 'Ошибка. Попробуй еще раз!';
+            feedback.style.color = 'var(--error)';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+            
+            // Автоматически показываем подсказку при первой ошибке
+            showHint();
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

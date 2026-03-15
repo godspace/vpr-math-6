@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 6. Буквенные выражения и модуль</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .task-text {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+            line-height: 1.5;
+        }
+        .expression-box {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+        }
+        input[type="number"] {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            width: 150px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            max-width: 200px;
+            margin-bottom: 0.5rem;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        
+        /* Стили для подсказки */
+        .hint-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .hint-box {
+            display: none;
+            text-align: left;
+            background-color: #fff3cd;
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            color: #856404;
+        }
+        .step { margin-bottom: 0.5rem; }
+        
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 6</h2>
+    
+    <div class="task-text">
+        Найдите значение выражения:
+    </div>
+    
+    <div class="expression-box" id="expression-display">
+        </div>
+    
+    <button class="hint-btn" onclick="showHint()">Как это решать?</button>
+    
+    <div class="hint-box" id="hint-container">
+        </div>
+    
+    <br>
+    <input type="number" id="answer-input" placeholder="Ответ" autocomplete="off">
+    <br>
+    <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let currentAnswer = 0;
+    let taskData = {};
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const getRandomVar = () => {
+        const vars = ['x', 'y', 'a', 'b', 'm', 'n'];
+        return vars[rand(0, vars.length - 1)];
+    };
+
+    function generateTask() {
+        // Сброс интерфейса
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('answer-input').disabled = false;
+        document.getElementById('check-btn').style.display = 'inline-block';
+        document.getElementById('hint-container').style.display = 'none';
+        document.getElementById('answer-input').focus();
+
+        // 1. Генерация параметров выражения: a * |varName - b| при varName = val
+        let a = rand(-5, 5);
+        if (a === 0) a = -2; // Исключаем умножение на 0
+        
+        let b = rand(-10, 10);
+        if (b === 0) b = 3; 
+
+        let varName = getRandomVar();
+        let val = rand(-10, 10);
+
+        // 2. Формирование строки выражения
+        let coefStr = a === -1 ? '-' : (a === 1 ? '' : a);
+        let signStr = b > 0 ? '-' : '+';
+        let bAbs = Math.abs(b);
+        
+        let expressionStr = `${coefStr}|${varName} ${signStr} ${bAbs}|`;
+        let conditionStr = `при <i>${varName}</i> = ${val}`;
+
+        document.getElementById('expression-display').innerHTML = `${expressionStr}<br><span style="font-size: 1.2rem; font-weight: normal;">${conditionStr}</span>`;
+
+        // 3. Вычисление правильного ответа
+        let insideModule = b > 0 ? (val - bAbs) : (val + bAbs);
+        let moduleResult = Math.abs(insideModule);
+        currentAnswer = a * moduleResult;
+
+        // 4. Сохраняем данные для генерации подсказки
+        taskData = { a, bAbs, signStr, varName, val, insideModule, moduleResult, expressionStr };
+    }
+
+    function showHint() {
+        const hintBox = document.getElementById('hint-container');
+        hintBox.style.display = 'block';
+        
+        let coefStr = taskData.a === -1 ? '-' : (taskData.a === 1 ? '' : taskData.a);
+        
+        hintBox.innerHTML = `
+            <div class="step"><b>Шаг 1:</b> Подставим ${taskData.val} вместо <i>${taskData.varName}</i>.<br>
+            Получим: ${coefStr}|${taskData.val} ${taskData.signStr} ${taskData.bAbs}|</div>
+            <div class="step"><b>Шаг 2:</b> Считаем то, что внутри модуля.<br>
+            ${taskData.val} ${taskData.signStr} ${taskData.bAbs} = ${taskData.insideModule}</div>
+            <div class="step"><b>Шаг 3:</b> Применяем модуль (он делает число положительным).<br>
+            |${taskData.insideModule}| = ${taskData.moduleResult}</div>
+            <div class="step"><b>Шаг 4:</b> Умножаем результат на коэффициент перед модулем.<br>
+            ${taskData.a} &middot; ${taskData.moduleResult} = ?</div>
+        `;
+    }
+
+    function checkAnswer() {
+        const inputStr = document.getElementById('answer-input').value;
+        const feedback = document.getElementById('feedback-display');
+        
+        if (inputStr === '') {
+            feedback.textContent = 'Введите ответ!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        const userAnswer = parseInt(inputStr, 10);
+
+        if (userAnswer === currentAnswer) {
+            feedback.textContent = 'Верно! Отличная работа.';
+            feedback.style.color = 'var(--success)';
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[6] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+
+        } else {
+            feedback.textContent = 'Ошибка. Попробуй еще раз!';
+            feedback.style.color = 'var(--error)';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

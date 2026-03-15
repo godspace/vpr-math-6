@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 7. Координатная прямая</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+        }
+        .task-text {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: #333;
+            text-align: left;
+        }
+
+        /* Координатная прямая */
+        .number-line-container {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            margin: 2rem 0;
+        }
+        .line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #333;
+            transform: translateY(-50%);
+        }
+        /* Стрелка на конце прямой */
+        .line::after {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: -6px;
+            border-width: 8px 0 8px 16px;
+            border-style: solid;
+            border-color: transparent transparent transparent #333;
+        }
+        
+        .tick {
+            position: absolute;
+            top: 50%;
+            width: 2px;
+            height: 16px;
+            background-color: #333;
+            transform: translateY(-50%);
+        }
+        .tick-label {
+            position: absolute;
+            top: calc(50% + 15px);
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* Точки A, B, C */
+        .point {
+            position: absolute;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            background-color: var(--error);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+        .point-label {
+            position: absolute;
+            top: calc(50% - 35px);
+            transform: translateX(-50%);
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--error);
+        }
+
+        /* Ячейки для ответов под точками */
+        .drop-zone {
+            position: absolute;
+            top: calc(50% + 40px);
+            transform: translateX(-50%);
+            width: 60px;
+            height: 35px;
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-color: #fafafa;
+            transition: 0.2s;
+        }
+        .drop-zone.active-target {
+            border-color: var(--accent);
+            background-color: #fff8e1;
+        }
+        .drop-zone.filled {
+            border-style: solid;
+            border-color: var(--primary);
+            background-color: #e3f2fd;
+            font-weight: bold;
+        }
+
+        /* Плашки с вариантами ответов */
+        .options-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            min-height: 50px;
+        }
+        .chip {
+            padding: 8px 16px;
+            background-color: white;
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.2s;
+        }
+        .chip:hover {
+            background-color: #f0f8ff;
+        }
+        .chip.selected {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            transform: scale(1.1);
+        }
+        .chip.placed {
+            display: none; /* Скрываем плашку, если она вставлена в ячейку */
+        }
+
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 200px;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 7</h2>
+    
+    <div class="task-text">
+        На координатной прямой отмечены точки A, B и C. Выберите из списка внизу числа и расставьте их в пустые окошки под соответствующими точками. 
+        <br><br><b>Как играть:</b> Нажмите на число, а затем на пустую рамку под буквой.
+    </div>
+    
+    <div class="options-container" id="options-container">
+        </div>
+
+    <div class="number-line-container" id="line-container">
+        <div class="line"></div>
+        </div>
+    
+    <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    const AXIS_MIN = -1;
+    const AXIS_MAX = 4;
+    let pointsData = []; // Хранит правильные значения для A, B, C
+    let selectedChip = null;
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    
+    // Перевод числа в проценты для позиционирования на CSS
+    const getLeftPercent = (val) => ((val - AXIS_MIN) / (AXIS_MAX - AXIS_MIN)) * 100;
+
+    function generateTask() {
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('check-btn').style.display = 'inline-block';
+        selectedChip = null;
+
+        const lineContainer = document.getElementById('line-container');
+        
+        // Очищаем старую прямую, оставляя только саму линию
+        lineContainer.innerHTML = '<div class="line"></div>';
+
+        // 1. Рисуем засечки (целые числа от -1 до 4)
+        for (let i = AXIS_MIN; i <= AXIS_MAX; i++) {
+            let leftPos = getLeftPercent(i);
+            
+            let tick = document.createElement('div');
+            tick.className = 'tick';
+            tick.style.left = `${leftPos}%`;
+            
+            let label = document.createElement('div');
+            label.className = 'tick-label';
+            label.style.left = `${leftPos}%`;
+            label.textContent = i;
+            
+            lineContainer.appendChild(tick);
+            lineContainer.appendChild(label);
+        }
+
+        // 2. Генерируем 5 уникальных случайных чисел
+        let values = new Set();
+        while(values.size < 5) {
+            // Генерируем числа вроде 0.67, 2.1, 3.5...
+            let num = (rand(AXIS_MIN * 100 + 20, AXIS_MAX * 100 - 20) / 100).toFixed(2);
+            // Убираем нули на конце (2.50 -> 2.5)
+            values.add(parseFloat(num)); 
+        }
+        
+        let sortedValues = Array.from(values).sort((a, b) => a - b);
+        
+        // 3. Выбираем 3 числа, которые станут точками A, B и C
+        // Берем 1-е, 3-е и 5-е из отсортированного массива, чтобы они не слипались
+        pointsData = [
+            { id: 'A', val: sortedValues[0] },
+            { id: 'B', val: sortedValues[2] },
+            { id: 'C', val: sortedValues[4] }
+        ];
+
+        // Рисуем точки и ячейки для ответа
+        pointsData.forEach(p => {
+            let leftPos = getLeftPercent(p.val);
+            
+            let pointLabel = document.createElement('div');
+            pointLabel.className = 'point-label';
+            pointLabel.style.left = `${leftPos}%`;
+            pointLabel.textContent = p.id;
+            
+            let point = document.createElement('div');
+            point.className = 'point';
+            point.style.left = `${leftPos}%`;
+            
+            let dropZone = document.createElement('div');
+            dropZone.className = 'drop-zone';
+            dropZone.style.left = `${leftPos}%`;
+            dropZone.dataset.point = p.id;
+            dropZone.onclick = () => handleDropZoneClick(dropZone);
+            
+            lineContainer.appendChild(pointLabel);
+            lineContainer.appendChild(point);
+            lineContainer.appendChild(dropZone);
+        });
+
+        // 4. Отрисовываем 5 плашек в случайном порядке
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        
+        // Перемешиваем массив
+        let shuffledValues = Array.from(values).sort(() => Math.random() - 0.5);
+        
+        shuffledValues.forEach(val => {
+            let chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.textContent = val.toString().replace('.', ','); // Запятая для РФ
+            chip.dataset.val = val;
+            chip.onclick = () => handleChipClick(chip);
+            optionsContainer.appendChild(chip);
+        });
+    }
+
+    function handleChipClick(chip) {
+        // Снимаем выделение со всех
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        // Выделяем текущую
+        chip.classList.add('selected');
+        selectedChip = chip;
+        
+        // Подсвечиваем пустые ячейки
+        document.querySelectorAll('.drop-zone:not(.filled)').forEach(dz => dz.classList.add('active-target'));
+    }
+
+    function handleDropZoneClick(dropZone) {
+        // Если ячейка уже заполнена, возвращаем число обратно наверх
+        if (dropZone.classList.contains('filled')) {
+            let val = dropZone.dataset.currentVal;
+            // Ищем скрытую плашку и возвращаем её
+            let chip = document.querySelector(`.chip[data-val="${val}"]`);
+            if (chip) chip.classList.remove('placed');
+            
+            dropZone.textContent = '';
+            dropZone.classList.remove('filled');
+            delete dropZone.dataset.currentVal;
+            return;
+        }
+
+        // Если ячейка пустая и выбрана плашка — вставляем её
+        if (selectedChip) {
+            dropZone.textContent = selectedChip.textContent;
+            dropZone.dataset.currentVal = selectedChip.dataset.val;
+            dropZone.classList.add('filled');
+            
+            selectedChip.classList.remove('selected');
+            selectedChip.classList.add('placed'); // Прячем плашку
+            selectedChip = null;
+            
+            // Убираем подсветку
+            document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('active-target'));
+        }
+    }
+
+    function checkAnswer() {
+        const feedback = document.getElementById('feedback-display');
+        let allCorrect = true;
+        let filledCount = 0;
+
+        document.querySelectorAll('.drop-zone').forEach(dz => {
+            if (dz.classList.contains('filled')) {
+                filledCount++;
+                let pointId = dz.dataset.point;
+                let userVal = parseFloat(dz.dataset.currentVal);
+                let correctVal = pointsData.find(p => p.id === pointId).val;
+                
+                if (userVal !== correctVal) {
+                    allCorrect = false;
+                    dz.style.borderColor = 'var(--error)';
+                    dz.style.backgroundColor = '#fdeaea';
+                } else {
+                    dz.style.borderColor = 'var(--success)';
+                    dz.style.backgroundColor = '#eafaf1';
+                }
+            } else {
+                allCorrect = false;
+            }
+        });
+
+        if (filledCount < 3) {
+            feedback.textContent = 'Заполните все три окошка!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        if (allCorrect) {
+            feedback.textContent = 'Верно! Отличный глазомер.';
+            feedback.style.color = 'var(--success)';
+            document.getElementById('check-btn').style.display = 'none';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[7] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+        } else {
+            feedback.textContent = 'Есть ошибки. Красные ячейки заполнены неверно!';
+            feedback.style.color = 'var(--error)';
+            
+            // Сбрасываем цвета через секунду, чтобы можно было исправить
+            setTimeout(() => {
+                document.querySelectorAll('.drop-zone').forEach(dz => {
+                    if (dz.classList.contains('filled')) {
+                        dz.style.borderColor = 'var(--primary)';
+                        dz.style.backgroundColor = '#e3f2fd';
+                    }
+                });
+            }, 2000);
+        }
+    }
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

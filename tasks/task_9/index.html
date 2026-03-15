@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 9. Текстовая задача (арифметика)</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        .task-text {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+            text-align: left;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .answer-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        input[type="number"] {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            width: 150px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            max-width: 200px;
+            margin-bottom: 0.5rem;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        
+        .hint-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+        .hint-box {
+            display: none;
+            text-align: left;
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #1565c0;
+            line-height: 1.6;
+        }
+        .hint-title {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #0d47a1;
+            border-bottom: 1px solid #bbdefb;
+            padding-bottom: 0.5rem;
+        }
+        .step { margin-bottom: 0.5rem; }
+        
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 9</h2>
+    
+    <div class="task-text" id="task-display">
+        </div>
+    
+    <button class="hint-btn" onclick="showHint()">Показать пример рассуждений</button>
+    
+    <div class="hint-box" id="hint-container">
+        </div>
+    
+    <div class="answer-wrapper">
+        <input type="number" id="answer-input" placeholder="Ответ" autocomplete="off">
+    </div>
+    
+    <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let currentAnswer = 0;
+    let hintData = {};
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // База шаблонов для задач
+    const templates = [
+        {
+            intro: (n) => `${n === 3 ? 'Три девочки' : (n === 4 ? 'Четыре девочки' : 'Пять девочек')} собирали ракушки.`,
+            ordinals: ["Первая собрала", "вторая", "третья", "четвертая", "пятая"],
+            outro: "Все ракушки они поделили поровну. Сколько ракушек получила каждая девочка?",
+            item: "ракушек"
+        },
+        {
+            intro: (n) => `${n === 3 ? 'Трое друзей' : (n === 4 ? 'Четверо друзей' : 'Пятеро друзей')} собирали грибы.`,
+            ordinals: ["Первый нашел", "второй", "третий", "четвертый", "пятый"],
+            outro: "Все грибы они поделили поровну. Сколько грибов досталось каждому?",
+            item: "грибов"
+        },
+        {
+            intro: (n) => `${n === 3 ? 'Три брата' : (n === 4 ? 'Четыре брата' : 'Пять братьев')} собирали яблоки.`,
+            ordinals: ["Первый собрал", "второй", "третий", "четвертый", "пятый"],
+            outro: "Все яблоки они сложили вместе и поделили поровну. Сколько яблок получил каждый?",
+            item: "яблок"
+        }
+    ];
+
+    // Функция генерации массива чисел с гарантированным целым средним значением
+    function generateNumbers(n, targetMean) {
+        let nums = [];
+        let sum = 0;
+        
+        // Генерируем n-1 случайных чисел вокруг среднего
+        for (let i = 0; i < n - 1; i++) {
+            let val = targetMean + rand(-15, 15);
+            if (val < 5) val = 5; // Защита от слишком маленьких/отрицательных чисел
+            nums.push(val);
+            sum += val;
+        }
+        
+        // Последнее число подгоняем так, чтобы общая сумма делилась на n
+        let lastVal = (targetMean * n) - sum;
+        
+        // Если последнее число получилось отрицательным (редко, но бывает), пересчитываем
+        if (lastVal < 5) {
+            return generateNumbers(n, targetMean);
+        }
+        
+        nums.push(lastVal);
+        return nums;
+    }
+
+    function buildTaskText(template, nums) {
+        let text = `${template.intro(nums.length)} `;
+        
+        for (let i = 0; i < nums.length; i++) {
+            if (i === nums.length - 1) {
+                text += `а ${template.ordinals[i]} — ${nums[i]} ${template.item}. `;
+            } else {
+                text += `${template.ordinals[i]} ${nums[i]}, `;
+            }
+        }
+        
+        text += template.outro;
+        return text;
+    }
+
+    function generateTask() {
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('answer-input').disabled = false;
+        document.getElementById('check-btn').style.display = 'inline-block';
+        document.getElementById('hint-container').style.display = 'none';
+        document.getElementById('answer-input').focus();
+
+        // 1. Параметры для задачи ученика
+        let templateIndex = rand(0, templates.length - 1);
+        let currentTemplate = templates[templateIndex];
+        let n = rand(3, 5); // От 3 до 5 участников
+        let targetMean = rand(20, 60); // Среднее количество предметов
+        
+        let nums = generateNumbers(n, targetMean);
+        currentAnswer = targetMean;
+
+        document.getElementById('task-display').innerHTML = buildTaskText(currentTemplate, nums);
+
+        // 2. Параметры для примера-подсказки (берем всегда 3 участника для простоты)
+        let hintMean = rand(15, 30);
+        let hintNums = generateNumbers(3, hintMean);
+        let hintSum = hintMean * 3;
+        
+        hintData = {
+            nums: hintNums,
+            sum: hintSum,
+            mean: hintMean,
+            n: 3
+        };
+    }
+
+    function showHint() {
+        const hintBox = document.getElementById('hint-container');
+        hintBox.style.display = 'block';
+        
+        let numsStr = hintData.nums.join(' + ');
+        
+        hintBox.innerHTML = `
+            <div class="hint-title">Пример решения:</div>
+            
+            <div class="step">Предположим, трое друзей нашли <b>${hintData.nums[0]}</b>, <b>${hintData.nums[1]}</b> и <b>${hintData.nums[2]}</b> монет, и решили поделить их поровну.</div>
+            
+            <div class="step"><b>Шаг 1.</b> Узнаем, сколько всего монет они нашли вместе:<br>
+            ${numsStr} = <b>${hintData.sum}</b> монет.</div>
+            
+            <div class="step"><b>Шаг 2.</b> Поделим общее количество на число друзей (${hintData.n}):<br>
+            ${hintData.sum} : ${hintData.n} = <b>${hintData.mean}</b>.</div>
+            
+            <div class="step">Значит, каждому достанется по ${hintData.mean} монет. Примени этот же алгоритм к своей задаче!</div>
+        `;
+    }
+
+    function checkAnswer() {
+        let inputStr = document.getElementById('answer-input').value.trim();
+        const feedback = document.getElementById('feedback-display');
+        
+        if (inputStr === '') {
+            feedback.textContent = 'Введите ответ!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        const userAnswer = parseInt(inputStr, 10);
+
+        if (userAnswer === currentAnswer) {
+            feedback.textContent = 'Верно! Отлично посчитано.';
+            feedback.style.color = 'var(--success)';
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[9] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+
+        } else {
+            feedback.textContent = 'Ошибка. Проверь общую сумму и раздели её на всех!';
+            feedback.style.color = 'var(--error)';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

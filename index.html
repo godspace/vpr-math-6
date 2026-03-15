@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Тренажёр ВПР по математике 6 класс | Интерактивная подготовка</title>
+    <meta name="description" content="Бесплатный интерактивный тренажёр для подготовки к ВПР по математике за 6 класс. 17 уникальных заданий с автоматической проверкой, подсказками и пошаговым решением.">
+    <meta name="keywords" content="ВПР математика 6 класс, тренажер ВПР, подготовка к ВПР, тесты по математике, интерактивные задания, дроби, проценты, уравнения">
+    
+    <meta property="og:title" content="Интерактивный тренажёр ВПР по математике (6 класс)">
+    <meta property="og:description" content="Подготовься к ВПР на отлично! Решай задачи с автоматической проверкой и пошаговыми подсказками.">
+    <meta property="og:type" content="website">
+
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 2rem;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            flex: 1; 
+        }
+        
+        /* Шапка меню */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .header-info h1 {
+            margin: 0 0 0.5rem 0;
+            color: #2c3e50;
+            font-size: 1.8rem;
+            width: 100%; /* Добавляем эту строчку, чтобы блок занял всю ширину */
+        }
+        
+        /* Панель ученика (имя + кнопка) */
+        .student-panel {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 0.5rem;
+        }
+        .student-greeting {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        
+        /* Кнопка сброса */
+        .reset-btn {
+            margin-left: auto; /* Добавляем эту строчку! Она прижмёт кнопку к правому краю */
+            background: transparent;
+            color: #95a5a6;
+            border: 1px solid #bdc3c7;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .reset-btn:hover {
+            background-color: #fdeaea;
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        /* Правая часть шапки */
+        .header-controls {
+            display: flex;
+            align-items: center;
+        }
+        .date-badge {
+            background-color: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #555;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* Прогресс-бар */
+        .progress-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            background-color: #ecf0f1;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Сетка заданий */
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+        }
+        .task-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            transition: 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 120px;
+        }
+        .task-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.15);
+        }
+        .task-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .task-status {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #95a5a6;
+        }
+        .task-card.completed {
+            background-color: #f0fdf4;
+            border-color: var(--success);
+        }
+        .task-card.completed .task-number { color: var(--success); }
+        .task-card.completed .task-status { color: var(--success); }
+
+        /* SEO Футер с кросс-ссылкой */
+        .site-footer {
+            margin-top: 3rem;
+            text-align: center;
+            padding: 1.5rem;
+            color: #7f8c8d;
+            font-size: 1rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        .cross-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .cross-link:hover {
+            color: #357ABD;
+            text-decoration: underline;
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            background: white;
+            padding: 3rem 2.5rem;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .modal-box h2 { margin-top: 0; color: var(--primary); }
+        .modal-box p { color: #555; line-height: 1.4; }
+        .modal-box input {
+            width: 100%;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-size: 1.1rem;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .modal-box input:focus { outline: none; border-color: var(--primary); }
+        .modal-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+        .modal-btn:hover { background-color: #357ABD; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="modal-overlay hidden" id="login-modal">
+    <div class="modal-box">
+        <h2>Добро пожаловать!</h2>
+        <p>Для сохранения результатов тестирования введи свою Фамилию и Имя.</p>
+        <input type="text" id="student-name-input" placeholder="Например: Иванов Иван" autocomplete="off">
+        <button class="modal-btn" onclick="saveStudent()">Начать подготовку</button>
+    </div>
+</div>
+
+<div class="container">
+    <header class="header">
+        <div class="header-info">
+            <h1>Тренажёр ВПР. Математика (6 класс)</h1>
+            <div class="student-panel">
+                <span class="student-greeting" id="greeting-display">Ученик: Неизвестно</span>
+                <button class="reset-btn" onclick="resetProgress()" aria-label="Сбросить все результаты">Выйти / Сбросить</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="progress-container" aria-label="Прогресс выполнения">
+            <div class="progress-text">
+                <span>Выполнено заданий:</span>
+                <span id="progress-count">0 / 17</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+        </section>
+
+        <nav class="tasks-grid" id="tasks-grid" aria-label="Список заданий ВПР">
+            </nav>
+    </main>
+</div>
+
+<footer class="site-footer">
+    <p>Больше интерактивных HTML-тренажёров по темам 6 класса на сайте: <br>
+    <a href="https://godspace.github.io/math-6-grade/" class="cross-link" target="_blank" rel="noopener">godspace.github.io/math-6-grade</a></p>
+</footer>
+
+<script>
+    const TOTAL_TASKS = 17;
+
+    window.onload = () => {
+        checkAuth();
+        renderGrid();
+        updateProgress();
+    };
+
+    function checkAuth() {
+        const studentName = localStorage.getItem('vpr_student');
+        if (!studentName) {
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('student-name-input').focus();
+        } else {
+            document.getElementById('greeting-display').textContent = `Ученик: ${studentName}`;
+        }
+    }
+
+    function saveStudent() {
+        const input = document.getElementById('student-name-input').value.trim();
+        if (input.length < 2) {
+            alert("Пожалуйста, введи настоящие Фамилию и Имя.");
+            return;
+        }
+        localStorage.setItem('vpr_student', input);
+        document.getElementById('login-modal').classList.add('hidden');
+        document.getElementById('greeting-display').textContent = `Ученик: ${input}`;
+    }
+
+    function resetProgress() {
+        if (confirm("Вы уверены, что хотите полностью сбросить свой прогресс и удалить имя?")) {
+            localStorage.removeItem('vpr_progress');
+            localStorage.removeItem('vpr_student');
+            location.reload();
+        }
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('tasks-grid');
+        const progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+        grid.innerHTML = '';
+
+        for (let i = 1; i <= TOTAL_TASKS; i++) {
+            const isCompleted = progress[i] === true;
+            
+            // Специальный линк для 14 задания
+            let link = `tasks/task_${i}/index.html`;
+            if (i === 14) link = `tasks/task_14/index.html`; 
+
+            const a = document.createElement('a');
+            a.href = link;
+            a.className = `task-card ${isCompleted ? 'completed' : ''}`;
+            a.title = `Перейти к заданию номер ${i}`; 
+            
+            a.innerHTML = `
+                <div class="task-number">Задание ${i}</div>
+                <div class="task-status">${isCompleted ? '✅ Выполнено' : 'Ожидает решения'}</div>
+            `;
+            grid.appendChild(a);
+        }
+    }
+
+    function updateProgress() {
+        const progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+        let completedCount = 0;
+        
+        for (let i = 1; i <= TOTAL_TASKS; i++) {
+            if (progress[i]) completedCount++;
+        }
+
+        const percentage = (completedCount / TOTAL_TASKS) * 100;
+        document.getElementById('progress-bar').style.width = `${percentage}%`;
+        document.getElementById('progress-count').textContent = `${completedCount} / ${TOTAL_TASKS}`;
+    }
+
+    document.getElementById('student-name-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') saveStudent();
+    });
+</script>
+
+</body>
+</html>

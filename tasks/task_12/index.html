@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 12. Текстовые задачи (Уровень 2)</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+            --chip-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 650px;
+            width: 100%;
+        }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .header-bar h2 { margin: 0; color: #333; }
+        .progress-badge {
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        .date-badge {
+            background-color: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #777;
+            font-family: monospace;
+        }
+        .task-text {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            padding: 1.2rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .completed-step {
+            background-color: #eafaf1;
+            border: 1px solid #a3e4d7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            color: #1e8449;
+            font-size: 1.1rem;
+            animation: fadeIn 0.5s ease;
+        }
+        .completed-step b {
+            display: inline-block;
+            margin-left: 10px;
+            color: #117a65;
+        }
+
+        .active-step {
+            background-color: #fff;
+            border: 2px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.1);
+        }
+        .step-title {
+            font-weight: bold;
+            font-size: 1.15rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        
+        .slots-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .slot {
+            width: 60px;
+            height: 45px;
+            border: 2px dashed #95a5a6;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #333;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .slot.filled {
+            border-style: solid;
+            border-color: var(--primary);
+            background-color: #e3f2fd;
+        }
+        .slot:hover.filled {
+            background-color: #fdeaea;
+            border-color: var(--error);
+        }
+        .equal-sign {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #555;
+            margin: 0 5px;
+        }
+        
+        /* Поле для ручного ввода ответа */
+        .step-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        input.step-input {
+            width: 80px;
+            height: 45px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            transition: border-color 0.3s;
+        }
+        input.step-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .unit-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #ccc;
+        }
+        .chip {
+            padding: 8px 16px;
+            background-color: var(--chip-bg);
+            border: 2px solid #bdc3c7;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .chip:hover {
+            border-color: var(--primary);
+            background-color: #f0f8ff;
+            transform: translateY(-2px);
+        }
+        .chip.hidden {
+            display: none;
+        }
+
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 1rem;
+            min-height: 24px;
+        }
+        
+        .success-screen {
+            text-align: center;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+        .success-screen h3 { color: var(--success); font-size: 2rem; margin-bottom: 0.5rem; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="trainer-card">
+    <div class="header-bar">
+        <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+        <h2>Задание 12</h2>
+        <span class="progress-badge" id="progress-badge">Задача 1 из 2</span>
+    </div>
+    
+    <div class="task-text" id="task-display">
+        </div>
+    
+    <div id="builder-area">
+        </div>
+</div>
+
+<script>
+    let tasksQueue = [];
+    let currentTaskIndex = 0;
+    let currentStepIndex = 0;
+
+    // База сбалансированных задач на движение
+    const motionScenarios = [
+        { S: 45, t_down: 3, v_cur: 3, v_down: 15, v_own: 12, v_up: 9, t_up: 5 },
+        { S: 48, t_down: 4, v_cur: 2, v_down: 12, v_own: 10, v_up: 8, t_up: 6 },
+        { S: 72, t_down: 4, v_cur: 3, v_down: 18, v_own: 15, v_up: 12, t_up: 6 }
+    ];
+
+    // База сбалансированных задач на работу
+    const workScenarios = [
+        { V: 60, t1: 3, t2: 6, p1: 20, p2: 10, p_tot: 30, t_both: 2 },
+        { V: 120, t1: 3, t2: 6, p1: 40, p2: 20, p_tot: 60, t_both: 2 },
+        { V: 144, t1: 6, t2: 12, p1: 24, p2: 12, p_tot: 36, t_both: 4 }
+    ];
+
+    function generateMotionTask() {
+        const d = motionScenarios[Math.floor(Math.random() * motionScenarios.length)];
+        return {
+            text: `Теплоход прошёл по течению реки <b>${d.S} км</b> за <b>${d.t_down} ч</b>. Сколько времени понадобится теплоходу на обратный путь, если скорость течения реки равна <b>${d.v_cur} км/ч</b>?`,
+            steps: [
+                {
+                    text: "1) Скорость теплохода по течению реки:",
+                    combos: [ [d.S.toString(), ":", d.t_down.toString()] ],
+                    result: d.v_down, unit: "км/ч",
+                    chips: [d.S.toString(), d.t_down.toString(), ":", "·", "-", d.v_cur.toString(), "15"]
+                },
+                {
+                    text: "2) Собственная скорость теплохода:",
+                    combos: [ [d.v_down.toString(), "-", d.v_cur.toString()] ],
+                    result: d.v_own, unit: "км/ч",
+                    chips: [d.v_down.toString(), d.v_cur.toString(), "-", "+", ":", d.S.toString()]
+                },
+                {
+                    text: "3) Скорость теплохода против течения:",
+                    combos: [ [d.v_own.toString(), "-", d.v_cur.toString()] ],
+                    result: d.v_up, unit: "км/ч",
+                    chips: [d.v_own.toString(), d.v_cur.toString(), "-", "+", "·", d.v_down.toString()]
+                },
+                {
+                    text: "4) Время на обратный путь:",
+                    combos: [ [d.S.toString(), ":", d.v_up.toString()] ],
+                    result: d.t_up, unit: "ч",
+                    chips: [d.S.toString(), d.v_up.toString(), ":", "-", "·", d.t_down.toString()]
+                }
+            ]
+        };
+    }
+
+    function generateWorkTask() {
+        const d = workScenarios[Math.floor(Math.random() * workScenarios.length)];
+        return {
+            text: `Первый мастер может изготовить <b>${d.V} деталей</b> за <b>${d.t1} ч</b>, а второй мастер может изготовить эти же детали за <b>${d.t2} ч</b>. За сколько часов они изготовят эту партию деталей, работая вместе?`,
+            steps: [
+                {
+                    text: "1) Производительность первого мастера:",
+                    combos: [ [d.V.toString(), ":", d.t1.toString()] ],
+                    result: d.p1, unit: "дет./ч",
+                    chips: [d.V.toString(), d.t1.toString(), ":", "-", "·", d.t2.toString()]
+                },
+                {
+                    text: "2) Производительность второго мастера:",
+                    combos: [ [d.V.toString(), ":", d.t2.toString()] ],
+                    result: d.p2, unit: "дет./ч",
+                    chips: [d.V.toString(), d.t2.toString(), ":", "-", "+", d.t1.toString()]
+                },
+                {
+                    text: "3) Совместная производительность:",
+                    combos: [ 
+                        [d.p1.toString(), "+", d.p2.toString()],
+                        [d.p2.toString(), "+", d.p1.toString()]
+                    ],
+                    result: d.p_tot, unit: "дет./ч",
+                    chips: [d.p1.toString(), d.p2.toString(), "+", "-", "·", d.V.toString()]
+                },
+                {
+                    text: "4) Время совместной работы:",
+                    combos: [ [d.V.toString(), ":", d.p_tot.toString()] ],
+                    result: d.t_both, unit: "ч",
+                    chips: [d.V.toString(), d.p_tot.toString(), ":", "-", "·", d.t1.toString()]
+                }
+            ]
+        };
+    }
+
+    function initLevel() {
+        tasksQueue = [generateMotionTask(), generateWorkTask()].sort(() => Math.random() - 0.5);
+        currentTaskIndex = 0;
+        currentStepIndex = 0;
+        renderBuilder();
+    }
+
+    function renderBuilder() {
+        const area = document.getElementById('builder-area');
+        
+        // Экран полного успеха после двух задач
+        if (currentTaskIndex >= tasksQueue.length) {
+            document.getElementById('task-display').style.display = 'none';
+            document.getElementById('progress-badge').style.display = 'none';
+            
+            area.innerHTML = `
+                <div class="success-screen">
+                    <h3>Блестяще! 🏆</h3>
+                    <p>Вы успешно решили оба типа сложных задач.</p>
+                </div>
+            `;
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[12] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+            setTimeout(() => { window.location.href = '../../index.html'; }, 2500);
+            return;
+        }
+
+        const task = tasksQueue[currentTaskIndex];
+        const step = task.steps[currentStepIndex];
+
+        document.getElementById('progress-badge').textContent = `Задача ${currentTaskIndex + 1} из ${tasksQueue.length}`;
+        document.getElementById('task-display').innerHTML = task.text;
+
+        let html = '';
+
+        for (let i = 0; i < currentStepIndex; i++) {
+            let s = task.steps[i];
+            html += `<div class="completed-step">✅ ${s.text} <b>${s.combos[0].join(' ')} = ${s.result} ${s.unit}</b></div>`;
+        }
+
+        html += `
+            <div class="active-step">
+                <div class="step-title">${step.text}</div>
+                <div class="slots-container">
+        `;
+        
+        for (let i = 0; i < step.combos[0].length; i++) {
+            html += `<div class="slot" onclick="clearSlot(this)"></div>`;
+        }
+        
+        html += `
+                    <div class="equal-sign">=</div>
+                    <div class="step-input-wrapper">
+                        <input type="number" id="step-answer" class="step-input" autocomplete="off">
+                        <span class="unit-label">${step.unit}</span>
+                    </div>
+                </div>
+                
+                <div class="chips-container" id="chips-container">
+        `;
+
+        let shuffledChips = [...step.chips].sort(() => Math.random() - 0.5);
+        shuffledChips.forEach((chipText, index) => {
+            html += `<div class="chip" id="chip-${index}" onclick="useChip('${chipText}', 'chip-${index}')">${chipText}</div>`;
+        });
+
+        html += `
+                </div>
+                <button class="action-btn" onclick="checkStep()">Проверить действие</button>
+                <div id="step-feedback" class="feedback"></div>
+            </div>
+        `;
+
+        area.innerHTML = html;
+        setTimeout(() => document.getElementById('step-answer').focus(), 100);
+    }
+
+    function useChip(text, id) {
+        let slots = document.querySelectorAll('.slot');
+        for (let slot of slots) {
+            if (!slot.textContent) {
+                slot.textContent = text;
+                slot.dataset.chipId = id;
+                slot.classList.add('filled');
+                document.getElementById(id).classList.add('hidden');
+                break;
+            }
+        }
+    }
+
+    function clearSlot(slot) {
+        if (!slot.textContent) return;
+        let id = slot.dataset.chipId;
+        document.getElementById(id).classList.remove('hidden');
+        
+        slot.textContent = '';
+        delete slot.dataset.chipId;
+        slot.classList.remove('filled');
+    }
+
+    // Функция для перехода к следующей задаче
+    function startNextTask() {
+        currentTaskIndex++;
+        currentStepIndex = 0;
+        renderBuilder();
+    }
+
+    function checkStep() {
+        let slots = document.querySelectorAll('.slot');
+        let userArr = Array.from(slots).map(s => s.textContent);
+        let userInputStr = document.getElementById('step-answer').value.trim();
+        
+        let task = tasksQueue[currentTaskIndex];
+        let step = task.steps[currentStepIndex];
+        let feedback = document.getElementById('step-feedback');
+
+        if (userArr.includes('')) {
+            feedback.textContent = "Сначала составьте выражение в ячейках!";
+            feedback.style.color = '#e67e22';
+            return;
+        }
+        
+        if (userInputStr === '') {
+            feedback.textContent = "Впишите ответ для этого действия!";
+            feedback.style.color = '#e67e22';
+            document.getElementById('step-answer').focus();
+            return;
+        }
+
+        let isComboCorrect = step.combos.some(combo => JSON.stringify(combo) === JSON.stringify(userArr));
+        let isAnswerCorrect = (parseFloat(userInputStr) === step.result);
+
+        if (!isComboCorrect) {
+            feedback.textContent = "Выражение составлено неверно. Подумай ещё раз!";
+            feedback.style.color = 'var(--error)';
+        } else if (!isAnswerCorrect) {
+            feedback.textContent = "Выражение верное, но в расчетах допущена ошибка!";
+            feedback.style.color = 'var(--error)';
+            document.getElementById('step-answer').value = '';
+            document.getElementById('step-answer').focus();
+        } else {
+            currentStepIndex++;
+            
+            // Проверяем, закончены ли шаги в текущей задаче
+            if (currentStepIndex >= task.steps.length) {
+                if (currentTaskIndex === 0) {
+                    // Конец ПЕРВОЙ задачи -> показываем промежуточный экран
+                    const area = document.getElementById('builder-area');
+                    area.innerHTML = `
+                        <div class="success-screen" style="margin-top: 2rem;">
+                            <h3>Отлично! Первая задача решена. ✨</h3>
+                            <p style="font-size: 1.2rem; color: #555; margin-bottom: 2rem;">
+                                Вы успешно собрали все действия и вычислили правильный ответ.
+                            </p>
+                            <button class="action-btn" onclick="startNextTask()" style="max-width: 300px;">
+                                Перейти ко второй задаче
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    // Конец ВТОРОЙ задачи -> переходим к финальному экрану успеха
+                    currentTaskIndex++;
+                    currentStepIndex = 0;
+                    renderBuilder();
+                }
+            } else {
+                // Переход к следующему шагу текущей задачи
+                renderBuilder();
+            }
+        }
+    }
+
+    window.onload = initLevel;
+</script>
+
+</body>
+</html>

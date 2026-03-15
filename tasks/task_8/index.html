@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 8. Линейные уравнения</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+        }
+        .task-text {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .equation-box {
+            font-size: 2rem;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+            color: #2c3e50;
+        }
+        
+        /* Новый контейнер для поля ввода */
+        .answer-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"] {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            width: 120px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            max-width: 200px;
+            margin-bottom: 0.5rem;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        
+        .hint-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+        .hint-box {
+            display: none;
+            text-align: left;
+            background-color: #e3f2fd; /* Поменяли цвет на более нейтральный (обучающий) */
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #1565c0;
+            line-height: 1.6;
+        }
+        .hint-title {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #0d47a1;
+            border-bottom: 1px solid #bbdefb;
+            padding-bottom: 0.5rem;
+        }
+        .step { margin-bottom: 0.5rem; }
+        
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 8</h2>
+    
+    <div class="task-text">
+        Найдите неизвестное значение <i>x</i> из равенства:
+    </div>
+    
+    <div class="equation-box" id="equation-display">
+        </div>
+    
+    <button class="hint-btn" onclick="showHint()">Показать пример решения</button>
+    
+    <div class="hint-box" id="hint-container">
+        </div>
+    
+    <div class="answer-wrapper">
+        <span><i>x</i> =</span>
+        <input type="text" id="answer-input" placeholder="..." autocomplete="off">
+    </div>
+    
+    <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let currentAnswer = 0;
+    let hintData = {};
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const formatDec = (num) => num.toString().replace('.', ',');
+
+    // Универсальная функция для генерации параметров уравнения ax ± b = c
+    function createEquation() {
+        let xInt = rand(-50, 50);
+        if (xInt === 0) xInt = 15;
+        let x = xInt / 10;
+        let a = rand(2, 6);
+        let bInt = rand(10, 80);
+        let b = bInt / 10;
+        
+        let isPlus = rand(0, 1) === 0;
+        let sign = isPlus ? '+' : '-';
+        let oppSign = isPlus ? '-' : '+';
+        
+        let c = isPlus ? (a * x + b) : (a * x - b);
+        c = Math.round(c * 10) / 10;
+        
+        let step1Val = isPlus ? (c - b) : (c + b);
+        step1Val = Math.round(step1Val * 10) / 10;
+
+        return { x, a, b, c, sign, oppSign, step1Val };
+    }
+
+    function generateTask() {
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('answer-input').disabled = false;
+        document.getElementById('check-btn').style.display = 'inline-block';
+        document.getElementById('hint-container').style.display = 'none';
+        document.getElementById('answer-input').focus();
+
+        // 1. Генерируем основное уравнение для ученика
+        let mainEq = createEquation();
+        currentAnswer = mainEq.x;
+
+        document.getElementById('equation-display').innerHTML = 
+            `${mainEq.a}<i>x</i> ${mainEq.sign} ${formatDec(mainEq.b)} = ${formatDec(mainEq.c)}`;
+
+        // 2. Генерируем похожее уравнение для подсказки
+        let exampleEq = createEquation();
+        // Гарантируем, что пример не совпадет с основным заданием
+        while (exampleEq.a === mainEq.a && exampleEq.b === mainEq.b) {
+            exampleEq = createEquation();
+        }
+
+        hintData = {
+            a: exampleEq.a,
+            b: formatDec(exampleEq.b),
+            c: formatDec(exampleEq.c),
+            sign: exampleEq.sign,
+            oppSign: exampleEq.oppSign,
+            step1Val: formatDec(exampleEq.step1Val),
+            finalVal: formatDec(exampleEq.x)
+        };
+    }
+
+    function showHint() {
+        const hintBox = document.getElementById('hint-container');
+        hintBox.style.display = 'block';
+        
+        hintBox.innerHTML = `
+            <div class="hint-title">Пример решения похожего уравнения: <br> ${hintData.a}<i>x</i> ${hintData.sign} ${hintData.b} = ${hintData.c}</div>
+            
+            <div class="step"><b>1.</b> Перенесём число без <i>x</i> в правую часть с противоположным знаком:<br>
+            ${hintData.a}<i>x</i> = ${hintData.c} <b>${hintData.oppSign}</b> ${hintData.b}</div>
+            
+            <div class="step"><b>2.</b> Считаем правую часть:<br>
+            ${hintData.a}<i>x</i> = ${hintData.step1Val}</div>
+            
+            <div class="step"><b>3.</b> Делим правую часть на число перед <i>x</i>:<br>
+            <i>x</i> = ${hintData.step1Val} : ${hintData.a}<br>
+            <i>x</i> = <b>${hintData.finalVal}</b></div>
+        `;
+    }
+
+    function checkAnswer() {
+        let inputStr = document.getElementById('answer-input').value.trim();
+        const feedback = document.getElementById('feedback-display');
+        
+        if (inputStr === '') {
+            feedback.textContent = 'Введите ответ!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        inputStr = inputStr.replace(',', '.');
+        const userAnswer = parseFloat(inputStr);
+
+        if (userAnswer === currentAnswer) {
+            feedback.textContent = 'Верно! Уравнение решено.';
+            feedback.style.color = 'var(--success)';
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[8] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+
+        } else {
+            feedback.textContent = 'Ошибка. Проверь знаки при переносе!';
+            feedback.style.color = 'var(--error)';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

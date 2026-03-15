@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 15. Делимость чисел</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .header-bar h2 { margin: 0; color: #333; }
+        .date-badge {
+            background-color: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #777;
+            font-family: monospace;
+        }
+        
+        .task-container {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 2rem;
+            text-align: left;
+            font-size: 1.25rem;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        input[type="number"] {
+            font-size: 1.5rem;
+            padding: 0.8rem;
+            width: 150px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+            width: 100%;
+            max-width: 250px;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        
+        .hint-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .hint-box {
+            display: none;
+            text-align: left;
+            background-color: #fff3cd;
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #856404;
+            line-height: 1.6;
+        }
+        .hint-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+
+<div class="trainer-card">
+    <div class="header-bar">
+        <h2>Задание 15</h2>
+    </div>
+    
+    <div class="task-container" id="task-text">
+        </div>
+    
+    <button class="hint-btn" onclick="showHint()">Как рассуждать в такой задаче?</button>
+    
+    <div class="hint-box" id="hint-container">
+        </div>
+    
+    <div class="input-area">
+        <input type="number" id="answer-input" placeholder="Ответ" autocomplete="off">
+        <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    </div>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let currentTask = {};
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    const plots = [
+        {
+            intro: (n) => `В доме <b>${n}</b> квартир.`,
+            condition: "В каждом подъезде одинаковое количество квартир, большее {min}, но меньшее {max}.",
+            question: "Сколько подъездов в доме?",
+            item: "квартир",
+            group: "подъезде"
+        },
+        {
+            intro: (n) => `В кинотеатре <b>${n}</b> мест.`,
+            condition: "В каждом ряду одинаковое количество кресел, большее {min}, но меньшее {max}.",
+            question: "Сколько рядов в кинотеатре?",
+            item: "мест",
+            group: "ряду"
+        },
+        {
+            intro: (n) => `Для школы закупили <b>${n}</b> учебников.`,
+            condition: "Их разложили в пачки так, что в каждой пачке оказалось одинаковое количество книг, большее {min}, но меньшее {max}.",
+            question: "Сколько получилось пачек?",
+            item: "учебников",
+            group: "пачке"
+        }
+    ];
+
+    function generateTask() {
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('answer-input').disabled = false;
+        document.getElementById('check-btn').style.display = 'block';
+        document.getElementById('hint-container').style.display = 'none';
+
+        let isValid = false;
+        let N, k, m, minVal, maxVal;
+
+        // Генерация параметров с гарантией единственного решения
+        while (!isValid) {
+            k = rand(11, 40); // Элементов в группе (например, квартир в подъезде)
+            m = rand(4, 25);  // Количество групп (например, подъездов)
+            N = k * m;        // Общее количество
+
+            if (N > 1000 || N < 100 || k === m) continue;
+
+            minVal = k - rand(2, 6);
+            maxVal = k + rand(2, 6);
+
+            if (minVal <= 5) continue;
+
+            // Проверяем, сколько делителей числа N попадает в диапазон (minVal, maxVal)
+            let divisorsInRange = 0;
+            for (let i = minVal + 1; i < maxVal; i++) {
+                if (N % i === 0) divisorsInRange++;
+            }
+
+            // Нам нужно, чтобы в диапазоне был строго ОДИН делитель (наш k)
+            if (divisorsInRange === 1) {
+                isValid = true;
+            }
+        }
+
+        currentTask = {
+            N: N,
+            k: k,
+            m: m, // Это правильный ответ
+            min: minVal,
+            max: maxVal,
+            plot: plots[rand(0, plots.length - 1)]
+        };
+
+        let conditionText = currentTask.plot.condition
+            .replace('{min}', `<b>${currentTask.min}</b>`)
+            .replace('{max}', `<b>${currentTask.max}</b>`);
+
+        document.getElementById('task-text').innerHTML = 
+            `${currentTask.plot.intro(currentTask.N)}<br><br>` +
+            `${conditionText}<br><br>` +
+            `<b>${currentTask.plot.question}</b>`;
+            
+        setTimeout(() => document.getElementById('answer-input').focus(), 100);
+    }
+
+    function showHint() {
+        const hintBox = document.getElementById('hint-container');
+        hintBox.style.display = 'block';
+        
+        hintBox.innerHTML = `
+            <div class="hint-title">Алгоритм решения:</div>
+            <div><b>1.</b> Общее количество ${currentTask.plot.item} (${currentTask.N}) должно делиться нацело на количество ${currentTask.plot.item} в одном ${currentTask.plot.group}.</div>
+            <div style="margin-top: 5px;"><b>2.</b> Значит, нам нужно найти число в промежутке от ${currentTask.min} до ${currentTask.max}, на которое ${currentTask.N} делится без остатка.</div>
+            <div style="margin-top: 5px;"><b>3.</b> Проверь числа: ${currentTask.min + 1}, ${currentTask.min + 2}... Какое из них является делителем числа ${currentTask.N}?</div>
+            <div style="margin-top: 5px;"><b>4.</b> Когда найдёшь это число, раздели общее количество (${currentTask.N}) на него. Результат и будет правильным ответом!</div>
+        `;
+    }
+
+    function checkAnswer() {
+        let inputStr = document.getElementById('answer-input').value.trim();
+        let feedback = document.getElementById('feedback-display');
+        
+        if (inputStr === '') {
+            feedback.textContent = 'Введите число!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        let userAnswer = parseInt(inputStr, 10);
+
+        if (userAnswer === currentTask.m) {
+            feedback.textContent = 'Верно! Отличная работа с делителями.';
+            feedback.style.color = 'var(--success)';
+            
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[15] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 2000);
+            
+        } else if (userAnswer === currentTask.k) {
+            // Распространенная ошибка: ученик нашел количество квартир в подъезде, но не разделил общее число
+            feedback.textContent = `Почти! ${currentTask.k} — это количество в одном ${currentTask.plot.group}. А в задаче спрашивают общее количество самих групп. Раздели ${currentTask.N} на ${currentTask.k}!`;
+            feedback.style.color = '#e67e22';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        } else {
+            feedback.textContent = `Ошибка. Ищи число от ${currentTask.min + 1} до ${currentTask.max - 1}, на которое делится ${currentTask.N}.`;
+            feedback.style.color = 'var(--error)';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkAnswer();
+    });
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 5. Проценты</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+        }
+        .task-text {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            color: #333;
+            line-height: 1.5;
+            text-align: left;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            border-radius: 4px;
+        }
+        input[type="number"] {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            width: 180px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            max-width: 250px;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 5</h2>
+    
+    <div class="task-text" id="task-display">
+        </div>
+    
+    <input type="number" id="answer-input" placeholder="Ответ (руб.)" autocomplete="off">
+    <br>
+    <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let currentAnswer = 0;
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // База сюжетов для задач
+    const plots = [
+        { 
+            subject: "Ежемесячная плата за телефон", 
+            pronoun: "она", 
+            actions: ["вырастет", "снизится"] 
+        },
+        { 
+            subject: "Абонентская плата за домашний интернет", 
+            pronoun: "она", 
+            actions: ["повысится", "уменьшится"] 
+        },
+        { 
+            subject: "Закупочная цена материалов для фабрики", 
+            pronoun: "она", 
+            actions: ["вырастет", "упадёт"] 
+        },
+        { 
+            subject: "Цена билета на междугородний автобус", 
+            pronoun: "она", 
+            actions: ["подорожает", "подешевеет"] 
+        },
+        { 
+            subject: "Стоимость бизнес-ланча в кафе", 
+            pronoun: "она", 
+            actions: ["увеличится", "снизится"] 
+        }
+    ];
+
+    function generateTask() {
+        // Сброс интерфейса
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('answer-input').disabled = false;
+        document.getElementById('check-btn').style.display = 'inline-block';
+        document.getElementById('answer-input').focus();
+
+        // 1. Выбираем случайный сюжет
+        const plot = plots[rand(0, plots.length - 1)];
+        
+        // 2. Выбираем, увеличивается цена или уменьшается (0 - рост, 1 - падение)
+        const actionIndex = rand(0, 1);
+        const actionWord = plot.actions[actionIndex];
+        const isIncrease = actionIndex === 0;
+
+        // 3. Генерируем числа так, чтобы процент от суммы был целым числом
+        // Цена от 200 до 1200 с шагом 20 рублей (200, 220, 240... 1200)
+        const basePrice = rand(10, 60) * 20; 
+        
+        // Процент (5%, 10%, 15%, 20%, 25%)
+        const percent = rand(1, 5) * 5; 
+
+        // 4. Считаем правильный ответ
+        const delta = (basePrice * percent) / 100;
+        currentAnswer = isIncrease ? basePrice + delta : basePrice - delta;
+
+        // 5. Выводим текст задачи
+        let text = `${plot.subject} составляет ${basePrice} рублей. Сколько рублей составит `;
+        
+        // Корректируем падеж для второй части предложения
+        let subjectLower = plot.subject.toLowerCase();
+        if (subjectLower.includes("цена") || subjectLower.includes("плата") || subjectLower.includes("стоимость")) {
+             // оставляем как есть, звучит нормально
+        }
+        
+        text += `${subjectLower}, если ${plot.pronoun} ${actionWord} на ${percent}%?`;
+        
+        document.getElementById('task-display').textContent = text;
+    }
+
+    function checkAnswer() {
+        const inputStr = document.getElementById('answer-input').value;
+        const feedback = document.getElementById('feedback-display');
+        
+        if (inputStr === '') {
+            feedback.textContent = 'Введите ответ!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        const userAnswer = parseInt(inputStr, 10);
+
+        if (userAnswer === currentAnswer) {
+            feedback.textContent = 'Верно! Отличный расчёт.';
+            feedback.style.color = 'var(--success)';
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[5] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+
+        } else {
+            feedback.textContent = 'Ошибка. Проверь вычисления ещё раз!';
+            feedback.style.color = 'var(--error)';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 2. Дроби (Часть 1 и 2)</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+        .step-indicator {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .expression {
+            font-size: 1.8rem;
+            margin: 1.5rem 0;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            min-height: 60px;
+        }
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 5px;
+        }
+        .fraction .num {
+            border-bottom: 2px solid #333;
+            padding: 0 5px;
+            line-height: 1.2;
+        }
+        .fraction .den {
+            padding: 0 5px;
+            line-height: 1.2;
+        }
+        input[type="text"] {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            width: 200px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .hint {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+            display: block;
+            min-height: 20px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        button:hover { background-color: #357ABD; }
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <span class="step-indicator" id="step-display">Задание 2 (Пункт 1 из 2)</span>
+    <h2 id="task-title">Обыкновенные дроби</h2>
+    
+    <div class="expression" id="expression-display"></div>
+    
+    <span class="hint" id="input-hint"></span>
+    <input type="text" id="answer-input" placeholder="Ответ" autocomplete="off">
+    <button id="check-btn" onclick="checkAnswer()">Проверить</button>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let currentStep = 1; // 1 - пункт 2(1), 2 - пункт 2(2)
+    let correctNum = 0;
+    let correctDen = 1;
+    let correctDecimal = 0;
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const gcd = (a, b) => b === 0 ? Math.abs(a) : gcd(b, a % b);
+    const renderFraction = (n, d) => `<div class="fraction"><span class="num">${n}</span><span class="den">${d}</span></div>`;
+
+    function generateTask() {
+        // Сброс интерфейса для нового шага
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback-display').textContent = '';
+        document.getElementById('answer-input').disabled = false;
+        document.getElementById('check-btn').style.display = 'block';
+        document.getElementById('answer-input').focus();
+
+        if (currentStep === 1) {
+            // ШАГ 1: Обыкновенные дроби
+            document.getElementById('step-display').innerText = "Задание 2 (Пункт 1 из 2)";
+            document.getElementById('task-title').innerText = "Обыкновенные дроби";
+            document.getElementById('input-hint').innerText = "Используйте слэш для дробей (например: 3/10)";
+            
+            let b = rand(3, 8);
+            let a = rand(1, b - 1) + b; 
+            let d = rand(2, 6);
+            let c = rand(1, d - 1);
+            let f = rand(2, 5);
+            let e = rand(1, f - 1);
+
+            document.getElementById('expression-display').innerHTML = 
+                `(${renderFraction(a, b)} - ${renderFraction(c, d)}) &middot; ${renderFraction(e, f)}`;
+
+            let step1Num = a * d - c * b;
+            let step1Den = b * d;
+            
+            let finalNum = step1Num * e;
+            let finalDen = step1Den * f;
+            
+            let divisor = gcd(finalNum, finalDen);
+            correctNum = finalNum / divisor;
+            correctDen = finalDen / divisor;
+
+            if (correctDen < 0) {
+                correctNum *= -1;
+                correctDen *= -1;
+            }
+
+        } else if (currentStep === 2) {
+            // ШАГ 2: Десятичные дроби
+            document.getElementById('step-display').innerText = "Задание 2 (Пункт 2 из 2)";
+            document.getElementById('task-title').innerText = "Десятичные дроби";
+            document.getElementById('input-hint').innerText = "Запишите ответ в виде десятичной дроби";
+            
+            let A = rand(100, 500) / 100;
+            let B = rand(1, 9) / 10;
+            let C = rand(11, 25) / 10;
+
+            let strA = A.toFixed(2).replace('.', ',');
+            let strB = B.toFixed(1).replace('.', ',');
+            let strC = C.toFixed(1).replace('.', ',');
+
+            document.getElementById('expression-display').innerHTML = `${strA} + ${strB} &middot; (-${strC})`;
+
+            correctDecimal = Math.round((A - (B * C)) * 1000) / 1000;
+        }
+    }
+
+    function checkAnswer() {
+        let inputStr = document.getElementById('answer-input').value.trim().replace(',', '.');
+        const feedback = document.getElementById('feedback-display');
+        
+        if (inputStr === '') {
+            feedback.textContent = 'Введите ответ!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        let isCorrect = false;
+
+        if (currentStep === 1) {
+            let parts = inputStr.split('/');
+            if (parts.length === 1) {
+                isCorrect = (parseInt(parts[0]) === correctNum && correctDen === 1);
+            } else if (parts.length === 2) {
+                let uNum = parseInt(parts[0]);
+                let uDen = parseInt(parts[1]);
+                
+                if (uDen < 0) {
+                    uNum *= -1;
+                    uDen *= -1;
+                }
+                
+                let uGcd = gcd(uNum, uDen);
+                uNum /= uGcd;
+                uDen /= uGcd;
+
+                isCorrect = (uNum === correctNum && uDen === correctDen);
+            }
+        } else if (currentStep === 2) {
+            let uDec = parseFloat(inputStr);
+            isCorrect = (uDec === correctDecimal);
+        }
+
+        if (isCorrect) {
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+            feedback.style.color = 'var(--success)';
+
+            if (currentStep === 1) {
+                // Если решили первую часть, переходим ко второй
+                feedback.textContent = 'Верно! Переходим ко второй части...';
+                currentStep = 2;
+                setTimeout(generateTask, 1500); // Генерируем пункт 2 через полторы секунды
+            } else {
+                // Если решили вторую часть, завершаем задание
+                feedback.textContent = 'Отлично! Задание выполнено. Возвращаемся в меню...';
+                
+                let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+                progress[2] = true;
+                localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+                setTimeout(() => {
+                    window.location.href = '../../index.html'; 
+                }, 1500);
+            }
+
+        } else {
+            feedback.textContent = 'Ошибка. Попробуй еще раз!';
+            feedback.style.color = 'var(--error)';
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    // Запускаем первую часть при загрузке страницы
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

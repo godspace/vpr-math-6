@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 11. Ось симметрии</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .task-text {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+            text-align: left;
+        }
+        
+        /* Контейнер для SVG */
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            background-color: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .shape {
+            fill: none;
+            stroke: #2c3e50;
+            stroke-width: 3;
+            stroke-linejoin: round;
+        }
+        .line {
+            stroke: #7f8c8d;
+            stroke-width: 2;
+        }
+        .line-label {
+            font-size: 18px;
+            font-style: italic;
+            font-family: serif;
+            fill: #333;
+        }
+        .watermark {
+            font-size: 10px;
+            fill: #ccc;
+            user-select: none;
+        }
+
+        /* Кнопки ответов */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        button.option-btn {
+            background-color: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 0.8rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-style: italic;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: serif;
+        }
+        button.option-btn:hover {
+            background-color: #f0f8ff;
+            transform: translateY(-2px);
+        }
+        
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 1.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    
+<div class="trainer-card">
+    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+    <h2>Задание 11</h2>
+    
+    <div class="task-text">
+        На рисунке изображена фигура, проведены её ось симметрии и несколько других прямых. Какая из прямых является осью симметрии фигуры?
+    </div>
+    
+    <div class="svg-container" id="svg-container">
+        </div>
+    
+    <div class="options-grid" id="options-container">
+        </div>
+    
+    <div class="feedback" id="feedback-display"></div>
+</div>
+
+<script>
+    let correctLabel = '';
+
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // База фигур и линий для отрисовки (координаты для viewBox 0 0 300 300)
+    const scenarios = [
+        {
+            // Равнобедренный треугольник (как в демоверсии)
+            polygon: "150,40 50,260 250,260",
+            trueLine: { x1: 150, y1: 10, x2: 150, y2: 290, lx: 135, ly: 25 },
+            distractors: [
+                { x1: 10, y1: 150, x2: 290, y2: 150, lx: 275, ly: 140 }, // Горизонтальная
+                { x1: 30, y1: 30, x2: 270, y2: 270, lx: 260, ly: 250 },  // Диагональ 1
+                { x1: 30, y1: 270, x2: 270, y2: 30, lx: 260, ly: 45 }    // Диагональ 2
+            ]
+        },
+        {
+            // Прямоугольник
+            polygon: "60,100 240,100 240,200 60,200",
+            trueLine: { x1: 10, y1: 150, x2: 290, y2: 150, lx: 275, ly: 140 }, // Горизонтальная ось
+            distractors: [
+                { x1: 40, y1: 40, x2: 260, y2: 260, lx: 250, ly: 240 },  // Диагональ (не ось симметрии для прямоугольника!)
+                { x1: 40, y1: 260, x2: 260, y2: 40, lx: 250, ly: 55 },   // Диагональ 2
+                { x1: 100, y1: 10, x2: 100, y2: 290, lx: 85, ly: 25 }    // Вертикальная смещенная
+            ]
+        },
+        {
+            // Ромб
+            polygon: "150,40 240,150 150,260 60,150",
+            trueLine: { x1: 150, y1: 10, x2: 150, y2: 290, lx: 135, ly: 25 }, // Вертикальная ось
+            distractors: [
+                { x1: 10, y1: 100, x2: 290, y2: 100, lx: 275, ly: 90 },  // Горизонтальная смещенная
+                { x1: 50, y1: 50, x2: 200, y2: 280, lx: 195, ly: 270 },  // Случайная наклонная
+                { x1: 250, y1: 50, x2: 100, y2: 280, lx: 110, ly: 270 }  // Случайная наклонная 2
+            ]
+        }
+    ];
+
+    function generateTask() {
+        document.getElementById('feedback-display').textContent = '';
+        
+        const scenario = scenarios[rand(0, scenarios.length - 1)];
+        
+        // Подготавливаем буквы для прямых
+        let labels = ['a', 'b', 'c', 'd'];
+        // Перемешиваем буквы
+        labels.sort(() => Math.random() - 0.5);
+        
+        // Назначаем букву правильной прямой
+        correctLabel = labels[0];
+        
+        let svgHTML = `<svg viewBox="0 0 300 300" width="300" height="300">`;
+        
+        // Добавляем водяной знак-дату в угол
+        svgHTML += `<text x="5" y="295" class="watermark">06.02</text>`;
+        
+        // Рисуем саму фигуру
+        svgHTML += `<polygon points="${scenario.polygon}" class="shape"></polygon>`;
+        
+        // Формируем массив всех линий (1 правильная + 3 дистрактора) с назначенными буквами
+        let linesToDraw = [
+            { ...scenario.trueLine, letter: labels[0] },
+            { ...scenario.distractors[0], letter: labels[1] },
+            { ...scenario.distractors[1], letter: labels[2] },
+            { ...scenario.distractors[2], letter: labels[3] }
+        ];
+        
+        // Отрисовываем линии и их подписи
+        linesToDraw.forEach(line => {
+            svgHTML += `<line x1="${line.x1}" y1="${line.y1}" x2="${line.x2}" y2="${line.y2}" class="line"></line>`;
+            svgHTML += `<text x="${line.lx}" y="${line.ly}" class="line-label">${line.letter}</text>`;
+        });
+        
+        svgHTML += `</svg>`;
+        document.getElementById('svg-container').innerHTML = svgHTML;
+        
+        // Генерируем кнопки в алфавитном порядке (a, b, c, d)
+        const btnContainer = document.getElementById('options-container');
+        btnContainer.innerHTML = '';
+        
+        ['a', 'b', 'c', 'd'].forEach(letter => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = letter;
+            btn.onclick = () => checkAnswer(letter);
+            btnContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedLetter) {
+        const feedback = document.getElementById('feedback-display');
+        
+        // Блокируем кнопки после ответа
+        document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+
+        if (selectedLetter === correctLabel) {
+            feedback.textContent = 'Верно! Это действительно ось симметрии.';
+            feedback.style.color = 'var(--success)';
+
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[11] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => {
+                window.location.href = '../../index.html'; 
+            }, 1500);
+
+        } else {
+            feedback.textContent = `Ошибка. Правильный ответ: ${correctLabel}.`;
+            feedback.style.color = 'var(--error)';
+            
+            // Разблокируем кнопки и генерируем новую задачу через 2 секунды
+            setTimeout(() => {
+                generateTask();
+            }, 2000);
+        }
+    }
+
+    window.onload = generateTask;
+</script>
+
+</body>
+</html>

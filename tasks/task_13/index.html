@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задание 13. Вычисления с дробями</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg-color: #F4F7F9;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --accent: #FF9F1C;
+            --chip-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .trainer-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 700px;
+            width: 100%;
+        }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .header-bar h2 { margin: 0; color: #333; }
+        .date-badge {
+            background-color: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #777;
+            font-family: monospace;
+        }
+        
+        .task-container {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .task-instruction {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .main-expression {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Красивое отображение дробей в тексте */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 4px;
+            font-size: 0.85em;
+        }
+        .frac span.num { border-bottom: 2px solid #2c3e50; padding: 0 4px; line-height: 1.2; }
+        .frac span.den { padding: 0 4px; line-height: 1.2; }
+        .mixed { display: inline-flex; align-items: center; }
+        .mixed .int { margin-right: 2px; }
+
+        /* Конструктор */
+        .completed-step {
+            background-color: #eafaf1;
+            border: 1px solid #a3e4d7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            color: #1e8449;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .active-step {
+            background-color: #fff;
+            border: 2px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.1);
+        }
+        .step-title {
+            font-weight: bold;
+            font-size: 1.15rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        
+        .slots-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .slot {
+            min-width: 60px;
+            height: 50px;
+            border: 2px dashed #95a5a6;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 0 10px;
+        }
+        .slot.filled {
+            border-style: solid;
+            border-color: var(--primary);
+            background-color: #e3f2fd;
+        }
+        .slot:hover.filled { background-color: #fdeaea; border-color: var(--error); }
+        .equal-sign { font-size: 1.5rem; font-weight: bold; color: #555; margin: 0 5px; }
+        
+        /* Блок ввода дробей */
+        .fraction-input-block {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .int-input {
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+        }
+        .frac-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .frac-col input {
+            width: 45px;
+            height: 30px;
+            font-size: 1.1rem;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        .frac-col input:focus, .int-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #ccc;
+        }
+        .chip {
+            padding: 6px 14px;
+            background-color: var(--chip-bg);
+            border: 2px solid #bdc3c7;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .chip:hover { border-color: var(--primary); background-color: #f0f8ff; transform: translateY(-2px); }
+        .chip.hidden { display: none; }
+
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        button.action-btn:hover { background-color: #357ABD; }
+        
+        .feedback { font-size: 1.1rem; font-weight: bold; margin-top: 1rem; min-height: 24px; }
+        .success-screen { text-align: center; padding: 2rem; animation: fadeIn 0.5s ease; }
+        .success-screen h3 { color: var(--success); font-size: 2rem; margin-bottom: 0.5rem; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
+
+<div class="trainer-card">
+    <div class="header-bar">
+        <h2>Задание 13</h2>
+    </div>
+    
+    <div class="task-container" id="task-display-container">
+        <div class="task-instruction">Найдите значение выражения (соблюдая порядок действий):</div>
+        <div class="main-expression" id="task-expression">
+            </div>
+    </div>
+    
+    <div id="builder-area"></div>
+</div>
+
+<script>
+    let currentStepIndex = 0;
+    
+    // Вспомогательная функция отрисовки дробей из строки (например: "1 2/3" -> HTML)
+    function parseToHTML(str) {
+        if (!str.includes('/')) return str; 
+        
+        let parts = str.split(' ');
+        if (parts.length === 2) {
+            let fracParts = parts[1].split('/');
+            return `<div class="mixed"><span class="int">${parts[0]}</span><div class="frac"><span class="num">${fracParts[0]}</span><span class="den">${fracParts[1]}</span></div></div>`;
+        } else {
+            let fracParts = str.split('/');
+            return `<div class="frac"><span class="num">${fracParts[0]}</span><span class="den">${fracParts[1]}</span></div>`;
+        }
+    }
+
+    // База заданий с добавленным шагом перевода дроби
+    const taskScenarios = [
+        {
+            // Выражение: (5/6 - 1/4) * 1 5/7 + 2/3
+            htmlExpression: `( ${parseToHTML("5/6")} &minus; ${parseToHTML("1/4")} ) &middot; ${parseToHTML("1 5/7")} + ${parseToHTML("2/3")}`,
+            steps: [
+                {
+                    text: "1) Действие в скобках:",
+                    combos: [ ["5/6", "-", "1/4"] ],
+                    expectedVal: 7/12, 
+                    chips: ["5/6", "1/4", "-", "+", "2/3", "3/4"]
+                },
+                {
+                    text: "2) Переведём смешанное число в неправильную дробь:",
+                    combos: [ ["1 5/7"] ],
+                    expectedVal: 12/7, 
+                    requireImproper: true, // Флаг: запрещает вводить целую часть
+                    chips: ["1 5/7", "5/6", "2/3"]
+                },
+                {
+                    text: "3) Выполним умножение:",
+                    combos: [ ["7/12", "·", "12/7"] ],
+                    expectedVal: 1, 
+                    chips: ["7/12", "12/7", "·", ":", "+", "1 5/7"]
+                },
+                {
+                    text: "4) Сложение (финальное действие):",
+                    combos: [ ["1", "+", "2/3"], ["2/3", "+", "1"] ],
+                    expectedVal: 5/3, 
+                    chips: ["1", "2/3", "+", "-", "·", "5/6"]
+                }
+            ]
+        },
+        {
+            // Выражение: 1 1/5 : (2/3 - 4/15) + 1/2
+            htmlExpression: `${parseToHTML("1 1/5")} : ( ${parseToHTML("2/3")} &minus; ${parseToHTML("4/15")} ) + ${parseToHTML("1/2")}`,
+            steps: [
+                {
+                    text: "1) Вычитание в скобках:",
+                    combos: [ ["2/3", "-", "4/15"] ],
+                    expectedVal: 2/5, 
+                    chips: ["2/3", "4/15", "-", "+", "1 1/5", "1/2"]
+                },
+                {
+                    text: "2) Переведём смешанное число в неправильную дробь:",
+                    combos: [ ["1 1/5"] ],
+                    expectedVal: 6/5, 
+                    requireImproper: true, // Флаг: запрещает вводить целую часть
+                    chips: ["1 1/5", "4/15", "1/2"]
+                },
+                {
+                    text: "3) Выполним деление:",
+                    combos: [ ["6/5", ":", "2/5"] ],
+                    expectedVal: 3, 
+                    chips: ["6/5", "2/5", ":", "·", "-", "1 1/5"]
+                },
+                {
+                    text: "4) Сложение (финальное действие):",
+                    combos: [ ["3", "+", "1/2"], ["1/2", "+", "3"] ],
+                    expectedVal: 7/2, 
+                    chips: ["3", "1/2", "+", "-", "·", "6/5"]
+                }
+            ]
+        }
+    ];
+
+    let currentTask = null;
+
+    function initTask() {
+        currentTask = taskScenarios[Math.floor(Math.random() * taskScenarios.length)];
+        document.getElementById('task-expression').innerHTML = currentTask.htmlExpression;
+        currentStepIndex = 0;
+        renderBuilder();
+    }
+
+    function renderBuilder() {
+        const area = document.getElementById('builder-area');
+        
+        if (currentStepIndex >= currentTask.steps.length) {
+            document.getElementById('task-display-container').style.display = 'none';
+            area.innerHTML = `
+                <div class="success-screen">
+                    <h3>Превосходно! 🥇</h3>
+                    <p>Вы успешно решили сложное выражение по действиям без единой ошибки.</p>
+                </div>
+            `;
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[13] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+            setTimeout(() => { window.location.href = '../../index.html'; }, 2500);
+            return;
+        }
+
+        const step = currentTask.steps[currentStepIndex];
+        let html = '';
+
+        // Пройденные шаги (теперь используют userResultHTML)
+        for (let i = 0; i < currentStepIndex; i++) {
+            let s = currentTask.steps[i];
+            let comboHTML = s.combos[0].map(c => parseToHTML(c)).join(' ');
+            html += `<div class="completed-step">✅ ${s.text} <b style="display:flex; align-items:center; gap:5px;">${comboHTML} = ${s.userResultHTML}</b></div>`;
+        }
+
+        // Активный шаг
+        html += `
+            <div class="active-step">
+                <div class="step-title">${step.text}</div>
+                <div class="slots-container">
+        `;
+        
+        for (let i = 0; i < step.combos[0].length; i++) {
+            html += `<div class="slot" onclick="clearSlot(this)"></div>`;
+        }
+        
+        html += `
+                    <div class="equal-sign">=</div>
+                    <div class="fraction-input-block">
+                        <input type="number" id="inp-int" class="int-input" placeholder="Цел." autocomplete="off">
+                        <div class="frac-col">
+                            <input type="number" id="inp-num" placeholder="Числ." autocomplete="off">
+                            <input type="number" id="inp-den" placeholder="Знам." autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chips-container" id="chips-container">
+        `;
+
+        let shuffledChips = [...step.chips].sort(() => Math.random() - 0.5);
+        shuffledChips.forEach((chipText, index) => {
+            html += `<div class="chip" id="chip-${index}" onclick="useChip('${chipText}', 'chip-${index}')">${parseToHTML(chipText)}</div>`;
+        });
+
+        html += `
+                </div>
+                <button class="action-btn" onclick="checkStep()">Проверить действие</button>
+                <div id="step-feedback" class="feedback"></div>
+            </div>
+        `;
+
+        area.innerHTML = html;
+    }
+
+    function useChip(text, id) {
+        let slots = document.querySelectorAll('.slot');
+        for (let slot of slots) {
+            if (!slot.dataset.val) {
+                slot.innerHTML = parseToHTML(text);
+                slot.dataset.val = text; 
+                slot.dataset.chipId = id;
+                slot.classList.add('filled');
+                document.getElementById(id).classList.add('hidden');
+                break;
+            }
+        }
+    }
+
+    function clearSlot(slot) {
+        if (!slot.dataset.val) return;
+        let id = slot.dataset.chipId;
+        document.getElementById(id).classList.remove('hidden');
+        
+        slot.innerHTML = '';
+        delete slot.dataset.val;
+        delete slot.dataset.chipId;
+        slot.classList.remove('filled');
+    }
+
+    function checkStep() {
+        let slots = document.querySelectorAll('.slot');
+        let userArr = Array.from(slots).map(s => s.dataset.val || '');
+        
+        let rawInt = document.getElementById('inp-int').value;
+        let rawNum = document.getElementById('inp-num').value;
+        let rawDen = document.getElementById('inp-den').value;
+
+        let intVal = rawInt === '' ? 0 : parseInt(rawInt);
+        let numVal = rawNum === '' ? 0 : parseInt(rawNum);
+        let denVal = rawDen === '' ? 1 : parseInt(rawDen);
+        
+        let feedback = document.getElementById('step-feedback');
+
+        // Проверка заполненности ячеек выражения
+        if (userArr.includes('')) {
+            feedback.textContent = "Заполните все ячейки выражения из кассы!";
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        // Проверка заполненности полей ответа
+        if (rawInt === '' && rawNum === '' && rawDen === '') {
+            feedback.textContent = "Впишите ответ!";
+            feedback.style.color = '#e67e22';
+            return;
+        }
+        if ((rawNum !== '' && rawDen === '') || (rawNum === '' && rawDen !== '')) {
+            feedback.textContent = "Дробь записана не полностью (проверьте числитель и знаменатель)!";
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        let step = currentTask.steps[currentStepIndex];
+
+        // Проверка на требование неправильной дроби (НОВЫЙ ФУНКЦИОНАЛ)
+        if (step.requireImproper && rawInt !== '') {
+            feedback.textContent = "Нужно записать неправильную дробь (ячейка для целой части должна остаться пустой)!";
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        // Вычисляем значение введенной учеником дроби
+        let userFloat = intVal + (numVal / denVal);
+        
+        let isComboCorrect = step.combos.some(combo => JSON.stringify(combo) === JSON.stringify(userArr));
+        let isAnswerCorrect = Math.abs(userFloat - step.expectedVal) < 0.0001;
+
+        if (!isComboCorrect) {
+            feedback.textContent = "Выражение составлено неверно. Проверьте порядок или знаки!";
+            feedback.style.color = 'var(--error)';
+        } else if (!isAnswerCorrect) {
+            feedback.textContent = "Выражение верное, но ответ посчитан с ошибкой. Попробуйте еще раз!";
+            feedback.style.color = 'var(--error)';
+        } else {
+            // Формируем строковое представление ответа ученика для истории
+            let userResStr = "";
+            if (rawInt !== '') userResStr += rawInt;
+            if (rawNum !== '' && rawDen !== '') {
+                if (userResStr !== "") userResStr += " ";
+                userResStr += `${rawNum}/${rawDen}`;
+            }
+            if (userResStr === "") userResStr = "0";
+
+            step.userResultHTML = parseToHTML(userResStr); // Сохраняем красивый HTML ответ
+            
+            currentStepIndex++;
+            renderBuilder();
+        }
+    }
+
+    window.onload = initTask;
+</script>
+
+</body>
+</html>
