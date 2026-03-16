@@ -21,15 +21,19 @@
             min-height: 100vh;
             margin: 0;
             padding: 1rem;
+            /* Блокировка выделения текста */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .trainer-card {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 600px;
+            max-width: 650px;
             width: 100%;
-            text-align: center;
         }
         .header-bar {
             display: flex;
@@ -40,14 +44,6 @@
             margin-bottom: 1.5rem;
         }
         .header-bar h2 { margin: 0; color: #333; }
-        .date-badge {
-            background-color: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            color: #777;
-            font-family: monospace;
-        }
         
         .task-container {
             background-color: #f8f9fa;
@@ -55,111 +51,127 @@
             border-radius: 8px;
             border-left: 4px solid var(--primary);
             margin-bottom: 2rem;
-            text-align: left;
             font-size: 1.25rem;
             color: #2c3e50;
             line-height: 1.6;
         }
 
-        .input-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        input[type="number"] {
-            font-size: 1.5rem;
-            padding: 0.8rem;
-            width: 150px;
-            text-align: center;
-            border: 2px solid #ccc;
+        /* Пошаговый интерфейс */
+        .completed-step {
+            background-color: #eafaf1;
+            border: 1px solid #a3e4d7;
+            padding: 1rem;
             border-radius: 8px;
-            transition: border-color 0.3s;
+            margin-bottom: 1rem;
+            color: #1e8449;
+            font-size: 1.1rem;
+            animation: fadeIn 0.4s ease;
         }
-        input[type="number"]:focus {
+        .completed-step b { margin-left: 10px; color: #117a65; }
+
+        .active-step {
+            background-color: #fff;
+            border: 2px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.1);
+        }
+        .step-title {
+            font-weight: bold;
+            font-size: 1.15rem;
+            color: #333;
+            margin-bottom: 0.8rem;
+        }
+        .step-hint {
+            font-size: 1.05rem;
+            color: #555;
+            margin-bottom: 1.5rem;
+            background-color: #fff3cd;
+            padding: 1rem;
+            border-left: 4px solid var(--accent);
+            border-radius: 4px;
+        }
+
+        .equation-line {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .math-input {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            padding: 8px;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            transition: 0.3s;
+            width: 90px;
+            font-family: inherit;
+        }
+        .math-input:focus {
             outline: none;
             border-color: var(--primary);
+            background-color: #e3f2fd;
         }
 
         button.action-btn {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 1rem 2rem;
+            padding: 0.8rem 1.5rem;
             font-size: 1.1rem;
             border-radius: 8px;
             cursor: pointer;
             transition: 0.2s;
             font-weight: bold;
-            width: 100%;
+            display: block;
+            margin: 0 auto;
             max-width: 250px;
+            width: 100%;
         }
         button.action-btn:hover { background-color: #357ABD; }
-        
-        .hint-btn {
-            background: none;
-            border: none;
-            color: var(--accent);
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 1rem;
-            margin-bottom: 1.5rem;
-            display: inline-block;
-        }
-
-        .hint-box {
-            display: none;
-            text-align: left;
-            background-color: #fff3cd;
-            border-left: 4px solid var(--accent);
-            padding: 1.5rem;
-            border-radius: 4px;
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
-            color: #856404;
-            line-height: 1.6;
-        }
-        .hint-title {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
         
         .feedback {
             font-size: 1.1rem;
             font-weight: bold;
             min-height: 1.5rem;
             margin-top: 1rem;
+            text-align: center;
+        }
+
+        .success-screen { text-align: center; padding: 2rem; animation: fadeIn 0.5s ease; }
+        .success-screen h3 { color: var(--success); font-size: 2rem; margin-bottom: 0.5rem; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-<a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
-
 <div class="trainer-card">
     <div class="header-bar">
+        <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
         <h2>Задание 15</h2>
     </div>
     
-    <div class="task-container" id="task-text">
-        </div>
-    
-    <button class="hint-btn" onclick="showHint()">Как рассуждать в такой задаче?</button>
-    
-    <div class="hint-box" id="hint-container">
-        </div>
-    
-    <div class="input-area">
-        <input type="number" id="answer-input" placeholder="Ответ" autocomplete="off">
-        <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
-    </div>
-    
-    <div class="feedback" id="feedback-display"></div>
+    <div class="task-container" id="task-text"></div>
+    <div id="interactive-area"></div>
 </div>
 
 <script>
     let currentTask = {};
+    let currentStep = 1;
+
     const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
     const plots = [
@@ -168,38 +180,37 @@
             condition: "В каждом подъезде одинаковое количество квартир, большее {min}, но меньшее {max}.",
             question: "Сколько подъездов в доме?",
             item: "квартир",
-            group: "подъезде"
+            group: "подъезде",
+            step1Title: "Шаг 1. Количество квартир в одном подъезде",
+            step2Title: "Шаг 2. Общее количество подъездов"
         },
         {
             intro: (n) => `В кинотеатре <b>${n}</b> мест.`,
             condition: "В каждом ряду одинаковое количество кресел, большее {min}, но меньшее {max}.",
             question: "Сколько рядов в кинотеатре?",
             item: "мест",
-            group: "ряду"
+            group: "ряду",
+            step1Title: "Шаг 1. Количество кресел в одном ряду",
+            step2Title: "Шаг 2. Общее количество рядов"
         },
         {
             intro: (n) => `Для школы закупили <b>${n}</b> учебников.`,
             condition: "Их разложили в пачки так, что в каждой пачке оказалось одинаковое количество книг, большее {min}, но меньшее {max}.",
             question: "Сколько получилось пачек?",
             item: "учебников",
-            group: "пачке"
+            group: "пачке",
+            step1Title: "Шаг 1. Количество книг в одной пачке",
+            step2Title: "Шаг 2. Общее количество пачек"
         }
     ];
 
     function generateTask() {
-        document.getElementById('answer-input').value = '';
-        document.getElementById('feedback-display').textContent = '';
-        document.getElementById('answer-input').disabled = false;
-        document.getElementById('check-btn').style.display = 'block';
-        document.getElementById('hint-container').style.display = 'none';
-
         let isValid = false;
         let N, k, m, minVal, maxVal;
 
-        // Генерация параметров с гарантией единственного решения
         while (!isValid) {
-            k = rand(11, 40); // Элементов в группе (например, квартир в подъезде)
-            m = rand(4, 25);  // Количество групп (например, подъездов)
+            k = rand(11, 40); // Элементов в группе
+            m = rand(4, 25);  // Количество групп (Ответ)
             N = k * m;        // Общее количество
 
             if (N > 1000 || N < 100 || k === m) continue;
@@ -209,13 +220,13 @@
 
             if (minVal <= 5) continue;
 
-            // Проверяем, сколько делителей числа N попадает в диапазон (minVal, maxVal)
+            // Ищем количество делителей в заданном диапазоне
             let divisorsInRange = 0;
             for (let i = minVal + 1; i < maxVal; i++) {
                 if (N % i === 0) divisorsInRange++;
             }
 
-            // Нам нужно, чтобы в диапазоне был строго ОДИН делитель (наш k)
+            // Должен быть строго один делитель (k)
             if (divisorsInRange === 1) {
                 isValid = true;
             }
@@ -224,7 +235,7 @@
         currentTask = {
             N: N,
             k: k,
-            m: m, // Это правильный ответ
+            m: m,
             min: minVal,
             max: maxVal,
             plot: plots[rand(0, plots.length - 1)]
@@ -239,25 +250,31 @@
             `${conditionText}<br><br>` +
             `<b>${currentTask.plot.question}</b>`;
             
-        setTimeout(() => document.getElementById('answer-input').focus(), 100);
+        renderStep1();
     }
 
-    function showHint() {
-        const hintBox = document.getElementById('hint-container');
-        hintBox.style.display = 'block';
-        
-        hintBox.innerHTML = `
-            <div class="hint-title">Алгоритм решения:</div>
-            <div><b>1.</b> Общее количество ${currentTask.plot.item} (${currentTask.N}) должно делиться нацело на количество ${currentTask.plot.item} в одном ${currentTask.plot.group}.</div>
-            <div style="margin-top: 5px;"><b>2.</b> Значит, нам нужно найти число в промежутке от ${currentTask.min} до ${currentTask.max}, на которое ${currentTask.N} делится без остатка.</div>
-            <div style="margin-top: 5px;"><b>3.</b> Проверь числа: ${currentTask.min + 1}, ${currentTask.min + 2}... Какое из них является делителем числа ${currentTask.N}?</div>
-            <div style="margin-top: 5px;"><b>4.</b> Когда найдёшь это число, раздели общее количество (${currentTask.N}) на него. Результат и будет правильным ответом!</div>
+    function renderStep1() {
+        const area = document.getElementById('interactive-area');
+        area.innerHTML = `
+            <div class="active-step" id="step1-block">
+                <div class="step-title">${currentTask.plot.step1Title}</div>
+                <div class="step-hint">
+                    Общее число (${currentTask.N}) должно делиться нацело на искомое число. 
+                    Какое число от <b>${currentTask.min + 1}</b> до <b>${currentTask.max - 1}</b> является делителем числа <b>${currentTask.N}</b>?
+                </div>
+                <div class="equation-line">
+                    <input type="text" id="input-k" class="math-input" autocomplete="off" placeholder="?">
+                </div>
+                <button class="action-btn" onclick="checkStep1()">Проверить</button>
+                <div id="feedback-step1" class="feedback"></div>
+            </div>
         `;
+        document.getElementById('input-k').focus();
     }
 
-    function checkAnswer() {
-        let inputStr = document.getElementById('answer-input').value.trim();
-        let feedback = document.getElementById('feedback-display');
+    function checkStep1() {
+        let inputStr = document.getElementById('input-k').value.trim();
+        let feedback = document.getElementById('feedback-step1');
         
         if (inputStr === '') {
             feedback.textContent = 'Введите число!';
@@ -265,39 +282,128 @@
             return;
         }
 
-        let userAnswer = parseInt(inputStr, 10);
+        let userK = parseInt(inputStr, 10);
 
-        if (userAnswer === currentTask.m) {
-            feedback.textContent = 'Верно! Отличная работа с делителями.';
-            feedback.style.color = 'var(--success)';
-            
-            document.getElementById('answer-input').disabled = true;
-            document.getElementById('check-btn').style.display = 'none';
-
-            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
-            progress[15] = true;
-            localStorage.setItem('vpr_progress', JSON.stringify(progress));
-
-            setTimeout(() => {
-                window.location.href = '../../index.html'; 
-            }, 2000);
-            
-        } else if (userAnswer === currentTask.k) {
-            // Распространенная ошибка: ученик нашел количество квартир в подъезде, но не разделил общее число
-            feedback.textContent = `Почти! ${currentTask.k} — это количество в одном ${currentTask.plot.group}. А в задаче спрашивают общее количество самих групп. Раздели ${currentTask.N} на ${currentTask.k}!`;
-            feedback.style.color = '#e67e22';
-            document.getElementById('answer-input').value = '';
-            document.getElementById('answer-input').focus();
-        } else {
-            feedback.textContent = `Ошибка. Ищи число от ${currentTask.min + 1} до ${currentTask.max - 1}, на которое делится ${currentTask.N}.`;
+        if (isNaN(userK)) {
+            feedback.textContent = 'Вводите только числа!';
             feedback.style.color = 'var(--error)';
-            document.getElementById('answer-input').value = '';
-            document.getElementById('answer-input').focus();
+            return;
+        }
+
+        if (userK === currentTask.k) {
+            // Верно, переходим к шагу 2
+            currentStep = 2;
+            renderStep2();
+        } else if (userK === currentTask.m) {
+            // Ввел итоговый ответ (подъезды), а не количество в одном (квартиры)
+            feedback.textContent = `Вы нашли итоговый ответ! Но на этом шаге нужно указать количество в одном ${currentTask.plot.group}. Ищите число от ${currentTask.min + 1} до ${currentTask.max - 1}.`;
+            feedback.style.color = '#e67e22';
+            document.getElementById('input-k').value = '';
+            document.getElementById('input-k').focus();
+        } else if (userK <= currentTask.min || userK >= currentTask.max) {
+            feedback.textContent = `Число должно быть больше ${currentTask.min} и меньше ${currentTask.max}!`;
+            feedback.style.color = 'var(--error)';
+            document.getElementById('input-k').value = '';
+            document.getElementById('input-k').focus();
+        } else {
+            feedback.textContent = `Число ${currentTask.N} не делится нацело на ${userK}. Попробуйте другое!`;
+            feedback.style.color = 'var(--error)';
+            document.getElementById('input-k').value = '';
+            document.getElementById('input-k').focus();
         }
     }
 
-    document.getElementById('answer-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') checkAnswer();
+    function renderStep2() {
+        const area = document.getElementById('interactive-area');
+        
+        // Превращаем первый шаг в выполненный
+        let html = `
+            <div class="completed-step">
+                ✅ ${currentTask.plot.step1Title}: <b>${currentTask.k}</b>
+            </div>
+        `;
+
+        html += `
+            <div class="active-step" id="step2-block">
+                <div class="step-title">${currentTask.plot.step2Title}</div>
+                <div class="step-hint">
+                    Чтобы узнать итоговый ответ, разделите общее количество на то, что вы нашли в первом шаге.<br>
+                    Заполните все три окошка:
+                </div>
+                <div class="equation-line">
+                    <input type="text" id="input-N" class="math-input" autocomplete="off" placeholder="Всего">
+                    :
+                    <input type="text" id="input-k-again" class="math-input" autocomplete="off" placeholder="В 1-м">
+                    =
+                    <input type="text" id="input-m" class="math-input" autocomplete="off" placeholder="Ответ">
+                </div>
+                <button class="action-btn" onclick="checkStep2()">Завершить задачу</button>
+                <div id="feedback-step2" class="feedback"></div>
+            </div>
+        `;
+
+        area.innerHTML = html;
+        document.getElementById('input-N').focus();
+    }
+
+    function checkStep2() {
+        let valN = parseInt(document.getElementById('input-N').value.trim(), 10);
+        let valK = parseInt(document.getElementById('input-k-again').value.trim(), 10);
+        let valM = parseInt(document.getElementById('input-m').value.trim(), 10);
+        let feedback = document.getElementById('feedback-step2');
+
+        if (isNaN(valN) || isNaN(valK) || isNaN(valM)) {
+            feedback.textContent = 'Заполните все окошки числами!';
+            feedback.style.color = '#e67e22';
+            return;
+        }
+
+        if (valN !== currentTask.N) {
+            feedback.textContent = `Ошибка. Первым числом должно быть общее количество (${currentTask.N}).`;
+            feedback.style.color = 'var(--error)';
+            return;
+        }
+
+        if (valK !== currentTask.k) {
+            feedback.textContent = `Ошибка. Вы должны делить на найденное число (${currentTask.k}).`;
+            feedback.style.color = 'var(--error)';
+            return;
+        }
+
+        if (valM !== currentTask.m) {
+            feedback.textContent = `Ошибка в делении! Посчитайте ${currentTask.N} : ${currentTask.k} еще раз.`;
+            feedback.style.color = 'var(--error)';
+            document.getElementById('input-m').value = '';
+            document.getElementById('input-m').focus();
+            return;
+        }
+
+        // Успех!
+        document.getElementById('interactive-area').innerHTML = `
+            <div class="success-screen">
+                <h3>Блестяще! 🏆</h3>
+                <p style="font-size: 1.2rem; color: #555;">Вы успешно решили задачу на делимость!</p>
+            </div>
+        `;
+
+        let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+        progress[15] = true;
+        localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+        setTimeout(() => {
+            window.location.href = '../../index.html'; 
+        }, 2500);
+    }
+
+    // Слушатели Enter для инпутов
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            if (currentStep === 1 && document.activeElement.id === 'input-k') {
+                checkStep1();
+            } else if (currentStep === 2 && document.activeElement.classList.contains('math-input')) {
+                checkStep2();
+            }
+        }
     });
 
     window.onload = generateTask;

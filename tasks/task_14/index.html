@@ -11,6 +11,7 @@
             --success: #2ECC71;
             --error: #E74C3C;
             --accent: #FF9F1C;
+            --chip-bg: #ffffff;
         }
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -21,13 +22,18 @@
             min-height: 100vh;
             margin: 0;
             padding: 1rem;
+            /* Блокировка выделения текста */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .trainer-card {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
         }
         .header-bar {
@@ -39,13 +45,13 @@
             margin-bottom: 1.5rem;
         }
         .header-bar h2 { margin: 0; color: #333; }
-        .date-badge {
-            background-color: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            color: #777;
-            font-family: monospace;
+        .progress-badge {
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
         }
         
         .task-container {
@@ -59,303 +65,486 @@
             line-height: 1.6;
         }
         
-        /* Визуализация клумбы */
+        /* Визуализация 1: Просто клумба */
         .visual-container {
             display: flex;
             justify-content: center;
             margin-bottom: 2rem;
+            margin-top: 2rem; /* Добавлен отступ для текста сверху */
+            position: relative;
         }
         .circle-drawing {
-            width: 150px;
-            height: 150px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
-            border: 4px dashed #7f8c8d; /* "заборчик" */
-            background-color: #eafaf1; /* "газон" */
+            border: 4px dashed #7f8c8d;
+            background-color: #eafaf1;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        .circle-center {
-            width: 6px;
-            height: 6px;
-            background-color: #2c3e50;
-            border-radius: 50%;
-            position: absolute;
-        }
+        .circle-center { width: 6px; height: 6px; background-color: #2c3e50; border-radius: 50%; position: absolute; }
         .circle-radius {
-            position: absolute;
-            height: 2px;
-            background-color: #2c3e50;
-            width: 50%;
-            right: 0;
-            top: calc(50% - 1px);
-            transform-origin: left center;
+            position: absolute; height: 2px; background-color: #2c3e50;
+            width: 50%; right: 0; top: calc(50% - 1px); transform-origin: left center;
         }
-        .radius-label {
-            position: absolute;
-            top: -20px;
-            right: 25%;
-            font-weight: bold;
-            font-style: italic;
-            font-family: serif;
-        }
+        .radius-label { position: absolute; top: -25px; right: 25%; font-weight: bold; font-style: italic; font-size: 1.2rem; }
 
-        /* Пошаговое решение */
-        .step-block {
-            border: 2px solid #eee;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            transition: 0.3s;
-        }
-        .step-block.active {
-            border-color: var(--primary);
-            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.1);
-            background-color: #fff;
-        }
-        .step-block.completed {
-            border-color: var(--success);
-            background-color: #f0fdf4;
-        }
-        .step-block.hidden {
-            display: none;
-        }
-        .step-title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        .formula-hint {
-            display: inline-block;
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-            font-family: monospace;
-        }
-        
-        .input-row {
+        /* Визуализация 2: Квадрат и вписанный круг */
+        .square-drawing {
+            width: 160px;
+            height: 160px;
+            border: 3px solid #bdc3c7;
+            background-color: #fdfefe;
+            position: relative;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            margin: 0 40px;
         }
-        input[type="text"] {
-            font-size: 1.3rem;
-            padding: 0.5rem;
-            width: 120px;
+        .inscribed-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #eafaf1;
+            border: 2px dashed #2ecc71;
+            position: absolute;
+        }
+        .dim-line-top {
+            position: absolute;
+            top: -20px; left: 0; right: 0;
+            border-top: 2px solid #e74c3c;
             text-align: center;
-            border: 2px solid #ccc;
-            border-radius: 6px;
-            transition: border-color 0.3s;
         }
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary);
+        .dim-line-top::before, .dim-line-top::after {
+            content: ''; position: absolute; top: -5px; width: 2px; height: 10px; background: #e74c3c;
         }
-        input:disabled {
-            background-color: #f5f5f5;
-            color: #555;
-            border-color: #ddd;
-        }
-        .unit {
-            font-weight: bold;
-            color: #555;
+        .dim-line-top::before { left: 0; }
+        .dim-line-top::after { right: 0; }
+        
+        /* Исправлено позиционирование надписей */
+        .dim-label-top { 
+            position: absolute; 
+            top: -45px; /* Поднято выше линии */
+            width: 100%; 
+            text-align: center; 
+            font-weight: bold; 
+            color: #e74c3c; 
+            font-size: 1.1rem; 
         }
 
-        button.action-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
+        .dim-line-mid {
+            position: absolute;
+            top: 50%; left: 0; right: 0;
+            border-top: 2px dashed #2980b9;
+        }
+        .dim-label-mid { 
+            position: absolute; 
+            top: calc(50% - 25px); /* Центрирование относительно линии диаметра */
+            width: 100%; 
+            text-align: center; 
+            font-weight: bold; 
+            color: #2980b9; 
+            font-size: 1.1rem; 
+        }
+
+        /* Конструктор решения */
+        .completed-step {
+            background-color: #eafaf1; border: 1px solid #a3e4d7;
+            padding: 0.8rem 1rem; border-radius: 8px; margin-bottom: 0.8rem;
+            color: #1e8449; font-size: 1.1rem; animation: fadeIn 0.4s ease;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .completed-step b { margin-left: 10px; color: #117a65; }
+
+        .active-step {
+            background-color: #fff; border: 2px solid var(--primary);
+            padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.1);
+        }
+        .step-title { font-weight: bold; font-size: 1.15rem; color: #333; margin-bottom: 0.8rem; }
+        
+        /* Блок с формулой */
+        .formula-box {
+            background-color: #eef2f5;
+            border-left: 4px solid var(--accent);
+            padding: 0.8rem 1rem;
+            margin-bottom: 1.2rem;
+            border-radius: 4px;
             font-size: 1.1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-            font-weight: bold;
+            color: #2c3e50;
+        }
+        .formula-box span.math { font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 1.2rem; color: #d35400; }
+
+        .slots-container { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem; }
+        .slot {
+            min-width: 60px; height: 45px; padding: 0 10px;
+            border: 2px dashed #95a5a6; border-radius: 6px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.3rem; font-weight: bold; color: #333;
+            background-color: #fafafa; cursor: pointer; transition: 0.2s;
+        }
+        .slot.filled { border-style: solid; border-color: var(--primary); background-color: #e3f2fd; }
+        .slot:hover.filled { background-color: #fdeaea; border-color: var(--error); }
+        .equal-sign { font-size: 1.5rem; font-weight: bold; color: #555; margin: 0 5px; }
+        
+        .step-input-wrapper { display: flex; align-items: center; gap: 8px; }
+        input.step-input {
+            width: 80px; height: 45px; font-size: 1.3rem; font-weight: bold;
+            text-align: center; border: 2px solid #ccc; border-radius: 6px; transition: 0.3s;
+        }
+        input.step-input:focus { outline: none; border-color: var(--accent); }
+        .unit-label { font-size: 1rem; color: #7f8c8d; font-weight: bold; }
+
+        .chips-container {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem;
+            padding-top: 1rem; border-top: 1px dashed #ccc;
+        }
+        .chip {
+            padding: 8px 16px; background-color: var(--chip-bg);
+            border: 2px solid #bdc3c7; border-radius: 20px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            user-select: none; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .chip:hover { border-color: var(--primary); background-color: #f0f8ff; transform: translateY(-2px); }
+        .chip.hidden { display: none; }
+
+        button.action-btn {
+            background-color: var(--primary); color: white; border: none;
+            padding: 0.8rem 1.5rem; font-size: 1.1rem; border-radius: 8px;
+            cursor: pointer; transition: 0.2s; font-weight: bold; max-width: 300px;
         }
         button.action-btn:hover { background-color: #357ABD; }
         
-        .feedback {
-            font-size: 1rem;
-            font-weight: bold;
-            margin-top: 1rem;
-            min-height: 20px;
-        }
-        .success-screen {
-            text-align: center;
-            padding: 1rem;
-            animation: fadeIn 0.5s ease;
-            display: none;
-        }
-        .success-screen h3 { color: var(--success); margin-bottom: 0.5rem; font-size: 1.5rem; }
+        .feedback { font-size: 1.1rem; font-weight: bold; margin-top: 1rem; min-height: 24px; }
+        
+        .success-screen { text-align: center; padding: 2rem; animation: fadeIn 0.5s ease; }
+        .success-screen h3 { color: var(--success); font-size: 2rem; margin-bottom: 0.5rem; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
 <div class="trainer-card">
     <div class="header-bar">
+        <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
         <h2>Задание 14</h2>
+        <span class="progress-badge" id="progress-badge">Задача 1 из 2</span>
     </div>
     
-    <div class="task-container" id="task-text">
-        </div>
+    <div class="task-container" id="task-text"></div>
+    <div class="visual-container" id="visual-container"></div>
     
-    <div class="visual-container">
-        <div class="circle-drawing">
-            <div class="circle-center"></div>
-            <div class="circle-radius">
-                <span class="radius-label">R</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="step-block active" id="step1-block">
-        <div class="step-title">Шаг 1: Найдите радиус клумбы (R)</div>
-        <div class="formula-hint">Подсказка: C = 2 &middot; &pi; &middot; R</div>
-        <div class="input-row">
-            <input type="text" id="input-r" placeholder="R =" autocomplete="off">
-            <span class="unit">м</span>
-            <button class="action-btn" id="btn-step1" onclick="checkStep1()">Проверить</button>
-        </div>
-        <div class="feedback" id="feedback1"></div>
-    </div>
-
-    <div class="step-block hidden" id="step2-block">
-        <div class="step-title">Шаг 2: Вычислите площадь клумбы (S)</div>
-        <div class="formula-hint">Подсказка: S = &pi; &middot; R&sup2;</div>
-        <div class="input-row">
-            <input type="text" id="input-s" placeholder="S =" autocomplete="off">
-            <span class="unit">м&sup2;</span>
-            <button class="action-btn" id="btn-step2" onclick="checkStep2()">Проверить</button>
-        </div>
-        <div class="feedback" id="feedback2"></div>
-    </div>
-    
-    <div class="success-screen" id="success-screen">
-        <h3>Отлично! 🌸</h3>
-        <p>Вы правильно применили формулы окружности и круга.</p>
-    </div>
+    <div id="builder-area"></div>
 </div>
 
 <script>
     const PI = 3.14;
-    let currentR = 0;
-    let currentC = 0;
-    let currentS = 0;
+    let tasksQueue = [];
+    let currentTaskIndex = 0;
+    let currentStepIndex = 0;
 
-    // Генерируем красивые целые радиусы (чтобы вычисления были посильными для 6 класса)
-    const radii = [2, 3, 4, 5, 10];
+    // Расширенные массивы значений для разнообразия
+    const radii = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20];
+    const sides = [4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 30, 40]; // Всегда чётные, чтобы радиус (a/2) был целым
 
-    function generateTask() {
-        // Выбираем случайный радиус
-        currentR = radii[Math.floor(Math.random() * radii.length)];
-        
-        // Считаем длину заборчика (C) и площадь (S)
-        currentC = Math.round((2 * PI * currentR) * 100) / 100;
-        currentS = Math.round((PI * currentR * currentR) * 100) / 100;
-        
-        // Форматируем для русского языка (запятая вместо точки)
-        let cStr = currentC.toString().replace('.', ',');
-        
-        document.getElementById('task-text').innerHTML = 
-            `Клумба имеет форму круга. На границе клумбы установлен декоративный заборчик, длина которого равна <b>${cStr} м</b>.<br><br>` +
-            `Найдите площадь клумбы. Ответ дайте в квадратных метрах. Число <i>&pi;</i> примите равным <b>3,14</b>.`;
+    function formatNum(num) {
+        return num.toString().replace('.', ',');
     }
 
-    function checkStep1() {
-        let inputStr = document.getElementById('input-r').value.trim().replace(',', '.');
-        let feedback = document.getElementById('feedback1');
+    // Генерация первой задачи (По длине найти площадь)
+    function generateTask1() {
+        let R = radii[Math.floor(Math.random() * radii.length)];
+        let C = Math.round((2 * PI * R) * 100) / 100;
+        let S = Math.round((PI * R * R) * 100) / 100;
+        let cStr = formatNum(C);
+        let rSq = R * R;
+
+        return {
+            htmlText: `Клумба имеет форму круга. На границе клумбы установлен декоративный заборчик, длина (<b>C</b>) которого равна <b>${cStr} м</b>.<br><br>` +
+                      `Найдите площадь (<b>S</b>) клумбы. Ответ дайте в квадратных метрах. Число <i>&pi;</i> примите равным <b>3,14</b>.`,
+            visualHTML: `
+                <div class="circle-drawing">
+                    <div class="circle-center"></div>
+                    <div class="circle-radius"><span class="radius-label">R</span></div>
+                </div>`,
+            steps: [
+                {
+                    shortTitle: "1) Удвоенное &pi;",
+                    title: "Шаг 1. Вычисление удвоенного числа &pi;",
+                    formulaText: `Длина окружности: <span class="math">C = 2 · &pi; · R</span><br>Сначала найдем числовой коэффициент <span class="math">2 · &pi;</span>:`,
+                    combos: [ ["2", "·", "3,14"], ["3,14", "·", "2"] ],
+                    result: 6.28, unit: "",
+                    chips: ["2", "3,14", "·", "+", ":", "6,28", "5,14"]
+                },
+                {
+                    shortTitle: "2) Радиус (R)",
+                    title: "Шаг 2. Нахождение радиуса (R)",
+                    formulaText: `Из формулы <span class="math">C = (2·&pi;) · R</span> выражаем радиус:<br><span class="math">R = C : (2·&pi;)</span>`,
+                    combos: [ [cStr, ":", "6,28"] ],
+                    result: R, unit: "м",
+                    chips: [cStr, "6,28", ":", "·", "-", "3,14", formatNum(C + 2)]
+                },
+                {
+                    shortTitle: "3) Квадрат радиуса (R&sup2;)",
+                    title: "Шаг 3. Квадрат радиуса (R&sup2;)",
+                    formulaText: `Площадь круга: <span class="math">S = &pi; · R&sup2;</span><br>Сначала подготовим <span class="math">R&sup2;</span> (то есть <span class="math">R · R</span>):`,
+                    combos: [ [R.toString(), "·", R.toString()] ],
+                    result: rSq, unit: "м&sup2;",
+                    chips: [R.toString(), R.toString(), "·", "+", ":", (R * 2).toString(), "3,14"]
+                },
+                {
+                    shortTitle: "4) Площадь (S)",
+                    title: "Шаг 4. Вычисление площади (S)",
+                    formulaText: `Финальный шаг: <span class="math">S = &pi; · R&sup2;</span>`,
+                    combos: [ ["3,14", "·", rSq.toString()], [rSq.toString(), "·", "3,14"] ],
+                    result: S, unit: "м&sup2;",
+                    chips: ["3,14", rSq.toString(), "·", ":", "+", R.toString(), (rSq * 2).toString()]
+                }
+            ]
+        };
+    }
+
+    // Генерация второй задачи (Квадрат и вписанный круг)
+    function generateTask2() {
+        let a = sides[Math.floor(Math.random() * sides.length)];
+        let R = a / 2;
+        let rSq = R * R;
+        let S = Math.round((PI * R * R) * 100) / 100;
+
+        return {
+            htmlText: `Клумба имеет форму круга. Она расположена внутри квадратного газона так, что касается всех его сторон.<br><br>Сторона квадрата (<b>a</b>) равна <b>${a} м</b>. Найдите площадь (<b>S</b>) клумбы. Число <i>&pi;</i> = <b>3,14</b>.`,
+            visualHTML: `
+                <div class="square-drawing">
+                    <div class="dim-label-top">Сторона a = ${a} м</div>
+                    <div class="dim-line-top"></div>
+                    <div class="inscribed-circle"></div>
+                    <div class="dim-line-mid"></div>
+                    <div class="dim-label-mid">Диаметр D</div>
+                </div>`,
+            steps: [
+                {
+                    shortTitle: "1) Диаметр (D)",
+                    title: "Шаг 1. Определение диаметра круга (D)",
+                    formulaText: `Посмотрите на рисунок: диаметр круга (<span class="math">D</span>) в точности равен стороне квадрата (<span class="math">a</span>).<br><span class="math">D = a</span>. Запишите диаметр:`,
+                    combos: [ [a.toString()] ],
+                    result: a, unit: "м",
+                    chips: [a.toString(), "3,14", "·", ":", (a*2).toString()]
+                },
+                {
+                    shortTitle: "2) Радиус (R)",
+                    title: "Шаг 2. Вычисление радиуса (R)",
+                    formulaText: `Радиус — это половина диаметра:<br><span class="math">R = D : 2</span>`,
+                    combos: [ [a.toString(), ":", "2"] ],
+                    result: R, unit: "м",
+                    chips: [a.toString(), "2", ":", "-", "·", R.toString(), "3,14"]
+                },
+                {
+                    shortTitle: "3) Квадрат радиуса (R&sup2;)",
+                    title: "Шаг 3. Квадрат радиуса (R&sup2;)",
+                    formulaText: `Для формулы площади <span class="math">S = &pi; · R&sup2;</span> подготовим <span class="math">R&sup2;</span>:`,
+                    combos: [ [R.toString(), "·", R.toString()] ],
+                    result: rSq, unit: "м&sup2;",
+                    chips: [R.toString(), R.toString(), "·", "+", ":", (R * 2).toString(), "3,14"]
+                },
+                {
+                    shortTitle: "4) Площадь (S)",
+                    title: "Шаг 4. Вычисление площади (S)",
+                    formulaText: `Финальный шаг: <span class="math">S = &pi; · R&sup2;</span>`,
+                    combos: [ ["3,14", "·", rSq.toString()], [rSq.toString(), "·", "3,14"] ],
+                    result: S, unit: "м&sup2;",
+                    chips: ["3,14", rSq.toString(), "·", ":", "+", R.toString(), a.toString()]
+                }
+            ]
+        };
+    }
+
+    function initLevel() {
+        tasksQueue = [generateTask1(), generateTask2()];
+        currentTaskIndex = 0;
+        currentStepIndex = 0;
+        renderBuilder();
+    }
+
+    function renderBuilder() {
+        const area = document.getElementById('builder-area');
         
-        if (inputStr === '') {
-            feedback.textContent = 'Введите значение радиуса!';
-            feedback.style.color = '#e67e22';
+        if (currentTaskIndex >= tasksQueue.length) {
+            document.getElementById('task-text').style.display = 'none';
+            document.getElementById('visual-container').style.display = 'none';
+            document.getElementById('progress-badge').style.display = 'none';
+            
+            area.innerHTML = `
+                <div class="success-screen">
+                    <h3>Блестяще! 🏆</h3>
+                    <p style="font-size: 1.2rem; color: #555;">Вы в совершенстве освоили формулы окружности и круга!</p>
+                </div>
+            `;
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[14] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+            setTimeout(() => { window.location.href = '../../index.html'; }, 3000);
             return;
         }
 
-        let userR = parseFloat(inputStr);
+        const task = tasksQueue[currentTaskIndex];
+        const step = task.steps[currentStepIndex];
 
-        if (userR === currentR) {
-            feedback.textContent = 'Верно! Теперь используй этот радиус для площади.';
-            feedback.style.color = 'var(--success)';
-            
-            // Блокируем первый шаг
-            document.getElementById('input-r').disabled = true;
-            document.getElementById('btn-step1').style.display = 'none';
-            document.getElementById('step1-block').classList.remove('active');
-            document.getElementById('step1-block').classList.add('completed');
-            
-            // Открываем второй шаг
-            document.getElementById('step2-block').classList.remove('hidden');
-            document.getElementById('step2-block').classList.add('active');
-            document.getElementById('input-s').focus();
-            
-        } else {
-            feedback.textContent = `Ошибка. Разделите ${currentC.toString().replace('.', ',')} на (2 · 3,14).`;
-            feedback.style.color = 'var(--error)';
-            document.getElementById('input-r').value = '';
-            document.getElementById('input-r').focus();
+        document.getElementById('progress-badge').textContent = `Задача ${currentTaskIndex + 1} из 2`;
+        document.getElementById('task-text').innerHTML = task.htmlText;
+        document.getElementById('visual-container').innerHTML = task.visualHTML;
+
+        let html = '';
+
+        for (let i = 0; i < currentStepIndex; i++) {
+            let s = task.steps[i];
+            let resStr = formatNum(s.result);
+            html += `
+                <div class="completed-step">
+                    <span>✅ <span style="color:#555;">${s.shortTitle}</span></span>
+                    <b>${s.combos[0].join(' ')} = ${resStr} ${s.unit}</b>
+                </div>`;
+        }
+
+        html += `
+            <div class="active-step">
+                <div class="step-title">${step.title}</div>
+                <div class="formula-box">${step.formulaText}</div>
+                <div class="slots-container">
+        `;
+        
+        for (let i = 0; i < step.combos[0].length; i++) {
+            html += `<div class="slot" onclick="clearSlot(this)"></div>`;
+        }
+        
+        html += `
+                    <div class="equal-sign">=</div>
+                    <div class="step-input-wrapper">
+                        <input type="text" id="step-answer" class="step-input" autocomplete="off">
+                        <span class="unit-label">${step.unit}</span>
+                    </div>
+                </div>
+                
+                <div class="chips-container" id="chips-container">
+        `;
+
+        let shuffledChips = [...step.chips].sort(() => Math.random() - 0.5);
+        shuffledChips.forEach((chipText, index) => {
+            html += `<div class="chip" id="chip-${index}" onclick="useChip('${chipText}', 'chip-${index}')">${chipText}</div>`;
+        });
+
+        html += `
+                </div>
+                <button class="action-btn" onclick="checkStep()">Проверить действие</button>
+                <div id="step-feedback" class="feedback"></div>
+            </div>
+        `;
+
+        area.innerHTML = html;
+        setTimeout(() => document.getElementById('step-answer').focus(), 100);
+    }
+
+    function useChip(text, id) {
+        let slots = document.querySelectorAll('.slot');
+        for (let slot of slots) {
+            if (!slot.textContent) {
+                slot.textContent = text;
+                slot.dataset.chipId = id;
+                slot.classList.add('filled');
+                document.getElementById(id).classList.add('hidden');
+                break;
+            }
         }
     }
 
-    function checkStep2() {
-        let inputStr = document.getElementById('input-s').value.trim().replace(',', '.');
-        let feedback = document.getElementById('feedback2');
+    function clearSlot(slot) {
+        if (!slot.textContent) return;
+        let id = slot.dataset.chipId;
+        document.getElementById(id).classList.remove('hidden');
         
-        if (inputStr === '') {
-            feedback.textContent = 'Введите значение площади!';
+        slot.textContent = '';
+        delete slot.dataset.chipId;
+        slot.classList.remove('filled');
+    }
+
+    function startNextTask() {
+        currentTaskIndex++;
+        currentStepIndex = 0;
+        renderBuilder();
+    }
+
+    function checkStep() {
+        let slots = document.querySelectorAll('.slot');
+        let userArr = Array.from(slots).map(s => s.textContent);
+        let userInputRaw = document.getElementById('step-answer').value.trim();
+        let userInputStr = userInputRaw.replace(',', '.');
+        
+        let task = tasksQueue[currentTaskIndex];
+        let step = task.steps[currentStepIndex];
+        let feedback = document.getElementById('step-feedback');
+
+        if (userArr.includes('')) {
+            feedback.textContent = "Сначала составьте выражение, нажимая на плашки!";
             feedback.style.color = '#e67e22';
             return;
         }
+        
+        if (userInputRaw === '' || isNaN(userInputStr)) {
+            feedback.textContent = "Впишите числовой ответ в рамку после знака равно!";
+            feedback.style.color = '#e67e22';
+            document.getElementById('step-answer').focus();
+            return;
+        }
 
-        let userS = parseFloat(inputStr);
+        let isComboCorrect = step.combos.some(combo => JSON.stringify(combo) === JSON.stringify(userArr));
+        let isAnswerCorrect = Math.abs(parseFloat(userInputStr) - step.result) < 0.01;
 
-        if (Math.abs(userS - currentS) < 0.01) { // Проверка с учетом погрешности JS
-            feedback.textContent = 'Абсолютно верно!';
-            feedback.style.color = 'var(--success)';
-            
-            // Завершаем задание
-            document.getElementById('input-s').disabled = true;
-            document.getElementById('btn-step2').style.display = 'none';
-            document.getElementById('step2-block').classList.remove('active');
-            document.getElementById('step2-block').classList.add('completed');
-            
-            let successScreen = document.getElementById('success-screen');
-            successScreen.innerHTML = '<h3>Отлично! 🌸</h3><p>Первая часть решена. Загружаем вторую...</p>';
-            successScreen.style.display = 'block';
-
-            // Перенаправляем на вторую задачу вместо главного меню
-            setTimeout(() => {
-                window.location.href = '../task_14_2/index.html'; 
-            }, 2000);
-            
-        } else {
-            let rSquare = currentR * currentR;
-            feedback.textContent = `Ошибка. Умножьте 3,14 на ${currentR}² (то есть на ${rSquare}).`;
+        if (!isComboCorrect) {
+            feedback.textContent = "Выражение составлено неверно. Внимательно посмотрите на формулу!";
             feedback.style.color = 'var(--error)';
-            document.getElementById('input-s').value = '';
-            document.getElementById('input-s').focus();
+        } else if (!isAnswerCorrect) {
+            feedback.textContent = "Выражение верное, но в расчетах допущена ошибка!";
+            feedback.style.color = 'var(--error)';
+            document.getElementById('step-answer').value = '';
+            document.getElementById('step-answer').focus();
+        } else {
+            currentStepIndex++;
+            
+            if (currentStepIndex >= task.steps.length) {
+                if (currentTaskIndex === 0) {
+                    const area = document.getElementById('builder-area');
+                    area.innerHTML = `
+                        <div class="success-screen" style="margin-top: 2rem;">
+                            <h3>Отлично! 🌸</h3>
+                            <p style="font-size: 1.2rem; color: #555; margin-bottom: 2rem;">
+                                Первая задача решена. Переходим ко второй...
+                            </p>
+                            <button class="action-btn" onclick="startNextTask()">
+                                Следующая задача
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    currentTaskIndex++;
+                    currentStepIndex = 0;
+                    renderBuilder();
+                }
+            } else {
+                renderBuilder();
+            }
         }
     }
 
-    // Слушатели для Enter
-    document.getElementById('input-r').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') checkStep1();
-    });
-    document.getElementById('input-s').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') checkStep2();
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && e.target.classList.contains('step-input')) {
+            checkStep();
+        }
     });
 
-    window.onload = generateTask;
+    window.onload = initLevel;
 </script>
 
 </body>

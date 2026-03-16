@@ -10,6 +10,7 @@
             --bg-color: #F4F7F9;
             --success: #2ECC71;
             --error: #E74C3C;
+            --warning: #F39C12;
         }
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -17,8 +18,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .trainer-card {
             background: white;
@@ -26,8 +31,9 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
-            max-width: 450px;
+            max-width: 600px;
             width: 100%;
+            margin: 20px;
         }
         .step-indicator {
             font-size: 0.9rem;
@@ -64,47 +70,113 @@
             padding: 0 5px;
             line-height: 1.2;
         }
-        input[type="text"] {
-            font-size: 1.5rem;
-            padding: 0.5rem;
-            width: 200px;
-            text-align: center;
-            border: 2px solid #ccc;
+        
+        .step-ui { margin-bottom: 1.5rem; }
+        .action-block {
+            background: #fdfdfd;
+            border: 1px solid #e1e8ed;
             border-radius: 8px;
+            padding: 1rem;
             margin-bottom: 1rem;
-            transition: border-color 0.3s;
+            text-align: left;
+            animation: fadeIn 0.5s ease-in-out;
         }
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .hint {
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            margin-bottom: 1rem;
-            display: block;
-            min-height: 20px;
-        }
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
-        button:hover { background-color: #357ABD; }
-        .feedback {
-            font-size: 1.1rem;
+        .action-title {
             font-weight: bold;
-            min-height: 1.5rem;
-            margin-top: 1rem;
-            transition: opacity 0.3s;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
         }
+        .sub-step {
+            margin-bottom: 0.8rem;
+            font-size: 1.05rem;
+            color: #34495e;
+            font-weight: 500;
+        }
+        .operator { font-size: 1.2rem; font-weight: bold; margin: 0 5px; }
+        
+        .choice-container {
+            display: flex; justify-content: center; gap: 15px; margin-bottom: 1.5rem;
+        }
+        .choice-btn {
+            background-color: #fff; border: 2px solid var(--primary);
+            color: var(--primary); padding: 1rem; font-size: 1.1rem;
+            border-radius: 8px; cursor: pointer; transition: all 0.3s;
+            font-weight: bold; flex: 1;
+        }
+        .choice-btn:hover {
+            background-color: var(--primary); color: white;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+        }
+        .choice-btn.wrong {
+            border-color: var(--error); color: var(--error); animation: shake 0.4s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25%, 75% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+        }
+        
+        .fraction-input {
+            display: inline-flex; flex-direction: column; align-items: center; width: 50px; vertical-align: middle;
+        }
+        .fraction-input input {
+            width: 100%; text-align: center; font-size: 1.1rem; padding: 4px;
+            border: 2px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; transition: 0.2s;
+        }
+        .fraction-input input:focus { border-color: var(--primary); outline: none; }
+        .fraction-input .divider {
+            width: 100%; height: 2px; background-color: #2c3e50; margin: 4px 0;
+        }
+        
+        .math-input {
+            text-align: center; font-size: 1.1rem; padding: 6px;
+            border: 2px solid #bdc3c7; border-radius: 6px; transition: 0.3s; width: 120px;
+        }
+        .math-input.small { width: 70px; margin: 4px; }
+        .math-input:focus { border-color: var(--primary); outline: none; }
+
+        .hint { font-size: 0.85rem; color: #7f8c8d; margin-bottom: 1rem; display: block; min-height: 20px; }
+        button.main-btn {
+            background-color: var(--primary); color: white; border: none;
+            padding: 0.8rem 1.5rem; font-size: 1rem; border-radius: 8px;
+            cursor: pointer; transition: 0.2s; width: 100%; margin-bottom: 0.5rem; font-weight: bold;
+        }
+        button.main-btn:hover { background-color: #357ABD; }
+        .feedback { font-size: 1rem; font-weight: bold; min-height: 1.5rem; margin-top: 1rem; transition: opacity 0.3s; }
+        
+        /* Специфичные стили для 2 этапа */
+        .dec-mark {
+            border-bottom: 3px solid var(--error);
+            color: var(--error);
+            text-decoration: none;
+            font-weight: 800;
+        }
+        .col-math {
+            display: inline-block;
+            font-size: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: right;
+            margin-top: 10px;
+            background: #fff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: 1px dashed #bdc3c7;
+        }
+        .col-row { display: flex; justify-content: flex-end; align-items: center; margin: 5px 0; }
+        .col-cell { width: 35px; text-align: center; font-weight: bold; }
+        .col-line { border-bottom: 3px solid #333; margin: 10px 0; width: 100%; }
+        .col-input {
+            width: 30px; text-align: center; font-size: 1.5rem;
+            font-family: 'Courier New', Courier, monospace; font-weight: bold;
+            border: 2px solid #95a5a6; border-radius: 4px; padding: 4px;
+        }
+        .col-input:focus { border-color: var(--primary); outline: none; background: #eaf2f8; }
+        .col-container { display: flex; justify-content: center; }
     </style>
 </head>
 <body>
@@ -115,157 +187,348 @@
     <h2 id="task-title">Обыкновенные дроби</h2>
     
     <div class="expression" id="expression-display"></div>
-    
     <span class="hint" id="input-hint"></span>
-    <input type="text" id="answer-input" placeholder="Ответ" autocomplete="off">
-    <button id="check-btn" onclick="checkAnswer()">Проверить</button>
     
+    <div id="interactive-area"></div>
+
+    <button id="check-btn" class="main-btn" onclick="checkAnswer()">Проверить</button>
     <div class="feedback" id="feedback-display"></div>
 </div>
 
 <script>
-    let currentStep = 1; // 1 - пункт 2(1), 2 - пункт 2(2)
-    let correctNum = 0;
-    let correctDen = 1;
-    let correctDecimal = 0;
+    let currentStep = 1;
+    let state = {}; 
 
     const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
     const gcd = (a, b) => b === 0 ? Math.abs(a) : gcd(b, a % b);
     const renderFraction = (n, d) => `<div class="fraction"><span class="num">${n}</span><span class="den">${d}</span></div>`;
+    const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value.trim() : '';
 
     function generateTask() {
-        // Сброс интерфейса для нового шага
-        document.getElementById('answer-input').value = '';
         document.getElementById('feedback-display').textContent = '';
-        document.getElementById('answer-input').disabled = false;
-        document.getElementById('check-btn').style.display = 'block';
-        document.getElementById('answer-input').focus();
+        const container = document.getElementById('interactive-area');
+        container.innerHTML = '';
 
         if (currentStep === 1) {
-            // ШАГ 1: Обыкновенные дроби
+            document.getElementById('check-btn').style.display = 'block';
             document.getElementById('step-display').innerText = "Задание 2 (Пункт 1 из 2)";
             document.getElementById('task-title').innerText = "Обыкновенные дроби";
-            document.getElementById('input-hint').innerText = "Используйте слэш для дробей (например: 3/10)";
+            document.getElementById('input-hint').innerText = "Выполните решение по действиям, заполняя пустые поля.";
             
-            let b = rand(3, 8);
-            let a = rand(1, b - 1) + b; 
-            let d = rand(2, 6);
-            let c = rand(1, d - 1);
-            let f = rand(2, 5);
-            let e = rand(1, f - 1);
+            let b = rand(3, 8), d = rand(2, 6);
+            while(b === d) { d = rand(2, 6); } 
+            let a = rand(1, b - 1) + b, c = rand(1, d - 1), f = rand(2, 5), e = rand(1, f - 1);
+            state = { a, b, c, d, e, f };
 
             document.getElementById('expression-display').innerHTML = 
                 `(${renderFraction(a, b)} - ${renderFraction(c, d)}) &middot; ${renderFraction(e, f)}`;
 
-            let step1Num = a * d - c * b;
-            let step1Den = b * d;
-            
-            let finalNum = step1Num * e;
-            let finalDen = step1Den * f;
-            
-            let divisor = gcd(finalNum, finalDen);
-            correctNum = finalNum / divisor;
-            correctDen = finalDen / divisor;
-
-            if (correctDen < 0) {
-                correctNum *= -1;
-                correctDen *= -1;
-            }
+            container.innerHTML = `
+                <div id="step1-ui" class="step-ui">
+                    <div class="action-block">
+                        <div class="action-title">Действие 1. Вычисляем в скобках:</div>
+                        <div class="sub-step" style="display:flex; align-items:center; gap:10px;">
+                            <span>1. Найдите общий знаменатель:</span>
+                            <input type="text" id="step1-cd" class="math-input small" autocomplete="off">
+                        </div>
+                        <div class="sub-step" style="display:flex; align-items:center; gap:10px;">
+                            <span>2. Запишите дроби с общим знаменателем:</span>
+                            <div class="fraction-input"><input type="text" id="step1-n1" autocomplete="off"><div class="divider"></div><input type="text" id="step1-d1" autocomplete="off"></div>
+                            <span class="operator">-</span>
+                            <div class="fraction-input"><input type="text" id="step1-n2" autocomplete="off"><div class="divider"></div><input type="text" id="step1-d2" autocomplete="off"></div>
+                        </div>
+                        <div class="sub-step" style="display:flex; align-items:center; gap:10px;">
+                            <span>3. Результат в скобках:</span>
+                            <div class="fraction-input"><input type="text" id="step1-res-n" autocomplete="off"><div class="divider"></div><input type="text" id="step1-res-d" autocomplete="off"></div>
+                        </div>
+                    </div>
+                    <div class="action-block">
+                        <div class="action-title">Действие 2. Умножение:</div>
+                        <div class="sub-step" style="display:flex; align-items:center; gap:10px;">
+                            <span>Окончательный ответ (сокращенная дробь):</span>
+                            <div class="fraction-input"><input type="text" id="final-n" autocomplete="off"><div class="divider"></div><input type="text" id="final-d" autocomplete="off"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('step1-cd').focus();
 
         } else if (currentStep === 2) {
-            // ШАГ 2: Десятичные дроби
+            document.getElementById('check-btn').style.display = 'none';
             document.getElementById('step-display').innerText = "Задание 2 (Пункт 2 из 2)";
             document.getElementById('task-title').innerText = "Десятичные дроби";
-            document.getElementById('input-hint').innerText = "Запишите ответ в виде десятичной дроби";
+            document.getElementById('input-hint').innerText = "Внимательно посмотрите на пример. Какое действие выполняется первым?";
             
-            let A = rand(100, 500) / 100;
-            let B = rand(1, 9) / 10;
-            let C = rand(11, 25) / 10;
+            // Генерируем так, чтобы A всегда было больше чем (B * C) для классического столбика
+            let A = rand(250, 500) / 100; // от 2.50 до 5.00
+            let B = rand(1, 9) / 10;      // от 0.1 до 0.9
+            let C = rand(11, 25) / 10;    // от 1.1 до 2.5
+            // Максимум B * C = 0.9 * 2.5 = 2.25
 
+            state = { A, B, C, step2Mode: 'choice' };
+            
             let strA = A.toFixed(2).replace('.', ',');
             let strB = B.toFixed(1).replace('.', ',');
             let strC = C.toFixed(1).replace('.', ',');
 
             document.getElementById('expression-display').innerHTML = `${strA} + ${strB} &middot; (-${strC})`;
 
-            correctDecimal = Math.round((A - (B * C)) * 1000) / 1000;
+            container.innerHTML = `
+                <div id="step2-choice-ui" class="step-ui action-block">
+                    <div class="action-title" style="text-align: center;">Выберите первое действие:</div>
+                    <div class="choice-container">
+                        <button class="choice-btn" onclick="handleChoice('add', this)">Сложение (+)</button>
+                        <button class="choice-btn" onclick="handleChoice('mul', this)">Умножение (&middot;)</button>
+                    </div>
+                </div>
+            `;
         }
+    }
+
+    function handleChoice(actionType, btnElement) {
+        const feedback = document.getElementById('feedback-display');
+        if (actionType === 'add') {
+            btnElement.classList.add('wrong');
+            feedback.textContent = 'Неверно! Вспомните правило приоритета математических действий.';
+            feedback.style.color = 'var(--error)';
+            setTimeout(() => btnElement.classList.remove('wrong'), 500);
+        } else if (actionType === 'mul') {
+            feedback.textContent = 'Верно! Первым выполняется умножение.';
+            feedback.style.color = 'var(--success)';
+            state.step2Mode = 'calc_mul';
+            setTimeout(() => { feedback.textContent = ''; renderStep2Multiplication(); }, 1000);
+        }
+    }
+
+    function renderStep2Multiplication() {
+        const container = document.getElementById('interactive-area');
+        
+        let intB = Math.round(state.B * 10);
+        let intC = Math.round(state.C * 10);
+        
+        // Для распределительного свойства
+        let tens = Math.floor(intC / 10) * 10;
+        let ones = intC % 10;
+
+        let strB = state.B.toFixed(1).replace('.', ',');
+        let strC = state.C.toFixed(1).replace('.', ',');
+
+        // Сохраняем правильные ответы для проверки
+        state.mul = {
+            p1: intB * tens,
+            p2: intB * ones,
+            sum: intB * intC,
+            decCount: 2,
+            finalStr: "-" + (intB * intC / 100).toFixed(2).replace('.', ',')
+        };
+
+        container.innerHTML = `
+            <div id="step2-mul-block" class="step-ui action-block">
+                <div class="action-title">Действие 1. Умножение: <span style="color:#555; font-weight:normal;">${strB} &middot; (-${strC})</span></div>
+                
+                <div class="sub-step">1) Умножим числа, отбросив запятые и знаки: <b>${intB} &middot; ${intC}</b></div>
+                <div class="sub-step" style="padding-left: 20px;">
+                    Для удобства разобьем на два действия:<br>
+                    ${intB} &middot; ${tens} = <input type="text" id="mul-part1" class="math-input small" autocomplete="off"><br>
+                    ${intB} &middot; ${ones} = <input type="text" id="mul-part2" class="math-input small" autocomplete="off"><br>
+                    Складываем их: <input type="text" id="mul-sum" class="math-input small" autocomplete="off">
+                </div>
+                
+                <div class="sub-step" style="margin-top: 20px;">2) Посчитаем знаки после запятой:</div>
+                <div class="sub-step" style="padding-left: 20px; font-size: 1.1rem;">
+                    У 0<u class="dec-mark">,${strB.split(',')[1]}</u> — 1 знак.<br>
+                    У ${strC.split(',')[0]}<u class="dec-mark">,${strC.split(',')[1]}</u> — 1 знак.<br>
+                    Всего нужно отделить справа налево: <input type="text" id="mul-dec-count" class="math-input small" autocomplete="off"> знака.
+                </div>
+
+                <div class="sub-step" style="margin-top: 20px;">3) Запишите итоговый ответ 1-го действия с учетом <b>знака</b> (плюс на минус):</div>
+                <div class="sub-step" style="padding-left: 20px;">
+                    <input type="text" id="step2-res1" class="math-input" placeholder="-X,XX" autocomplete="off" style="width: 150px;">
+                </div>
+            </div>
+        `;
+        document.getElementById('check-btn').style.display = 'block';
+        document.getElementById('input-hint').innerText = "Пройдите шаги умножения.";
+        document.getElementById('mul-part1').focus();
+    }
+
+    function renderStep2Column() {
+        const container = document.getElementById('interactive-area');
+        document.getElementById('feedback-display').textContent = '';
+        
+        let strA = state.A.toFixed(2);
+        let A_int = strA.split('.')[0];
+        let A_d1 = strA.split('.')[1].charAt(0);
+        let A_d2 = strA.split('.')[1].charAt(1);
+
+        let M = (state.B * state.C).toFixed(2);
+        let M_int = M.split('.')[0];
+        let M_d1 = M.split('.')[1].charAt(0);
+        let M_d2 = M.split('.')[1].charAt(1);
+
+        let res = (state.A - state.B * state.C).toFixed(2);
+        state.col = {
+            r_int: res.split('.')[0],
+            r_d1: res.split('.')[1].charAt(0),
+            r_d2: res.split('.')[1].charAt(1)
+        };
+
+        container.innerHTML = `
+            <div id="step2-col-block" class="step-ui action-block">
+                <div class="action-title">Действие 2. Сложение</div>
+                <div class="sub-step">Исходный пример: ${state.A.toFixed(2).replace('.', ',')} + (${state.mul.finalStr})</div>
+                <div class="sub-step">Так как мы прибавляем отрицательное число, это равносильно <b>вычитанию</b>. Запишем строго запятая под запятой:</div>
+                
+                <div class="col-container">
+                    <div class="col-math">
+                        <div class="col-row">
+                            <div class="col-cell"></div>
+                            <div class="col-cell">${A_int}</div>
+                            <div class="col-cell">,</div>
+                            <div class="col-cell">${A_d1}</div>
+                            <div class="col-cell">${A_d2}</div>
+                        </div>
+                        <div class="col-row">
+                            <div class="col-cell">-</div>
+                            <div class="col-cell">${M_int}</div>
+                            <div class="col-cell">,</div>
+                            <div class="col-cell">${M_d1}</div>
+                            <div class="col-cell">${M_d2}</div>
+                        </div>
+                        <div class="col-line"></div>
+                        <div class="col-row">
+                            <div class="col-cell"></div>
+                            <div class="col-cell"><input type="text" id="col-res-int" class="col-input" autocomplete="off" maxlength="1"></div>
+                            <div class="col-cell" style="font-weight:900; color: var(--primary);">,</div>
+                            <div class="col-cell"><input type="text" id="col-res-d1" class="col-input" autocomplete="off" maxlength="1"></div>
+                            <div class="col-cell"><input type="text" id="col-res-d2" class="col-input" autocomplete="off" maxlength="1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        state.step2Mode = 'calc_col';
+        document.getElementById('input-hint').innerText = "Выполните вычитание в столбик, вписывая цифры в окошки.";
+        document.getElementById('col-res-int').focus();
+
+        // Автоматический переход фокуса для удобства (как в школе)
+        document.querySelectorAll('.col-input').forEach((input, index, list) => {
+            input.addEventListener('input', function() {
+                if(this.value.length === 1 && index < list.length - 1) list[index + 1].focus();
+            });
+        });
     }
 
     function checkAnswer() {
-        let inputStr = document.getElementById('answer-input').value.trim().replace(',', '.');
         const feedback = document.getElementById('feedback-display');
         
-        if (inputStr === '') {
-            feedback.textContent = 'Введите ответ!';
-            feedback.style.color = '#e67e22';
-            return;
-        }
-
-        let isCorrect = false;
-
         if (currentStep === 1) {
-            let parts = inputStr.split('/');
-            if (parts.length === 1) {
-                isCorrect = (parseInt(parts[0]) === correctNum && correctDen === 1);
-            } else if (parts.length === 2) {
-                let uNum = parseInt(parts[0]);
-                let uDen = parseInt(parts[1]);
-                
-                if (uDen < 0) {
-                    uNum *= -1;
-                    uDen *= -1;
-                }
-                
-                let uGcd = gcd(uNum, uDen);
-                uNum /= uGcd;
-                uDen /= uGcd;
+            const vals = [
+                getVal('step1-cd'), getVal('step1-n1'), getVal('step1-d1'),
+                getVal('step1-n2'), getVal('step1-d2'), getVal('step1-res-n'),
+                getVal('step1-res-d'), getVal('final-n'), getVal('final-d')
+            ];
 
-                isCorrect = (uNum === correctNum && uDen === correctDen);
+            if (vals.includes('')) {
+                feedback.textContent = 'Пожалуйста, заполните все пустые поля!';
+                feedback.style.color = '#e67e22'; return;
             }
-        } else if (currentStep === 2) {
-            let uDec = parseFloat(inputStr);
-            isCorrect = (uDec === correctDecimal);
-        }
+            if (vals.some(v => isNaN(v) || v === '-' || v === '')) {
+                feedback.textContent = 'В поля можно вводить только числа!';
+                feedback.style.color = 'var(--error)'; return;
+            }
 
-        if (isCorrect) {
-            document.getElementById('answer-input').disabled = true;
-            document.getElementById('check-btn').style.display = 'none';
+            const [cd, n1, d1, n2, d2, res_n, res_d, fn, fd] = vals.map(Number);
+            let errorMsg = 'Ошибка. Проверьте: ';
+            let step1_correct = true;
+
+            if (cd % state.b !== 0 || cd % state.d !== 0) { step1_correct = false; errorMsg += 'общий знаменатель; '; }
+            else {
+                if (d1 !== cd || d2 !== cd) { step1_correct = false; errorMsg += 'знаменатели дробей (шаг 2); '; }
+                if (n1 !== state.a * (cd / state.b) || n2 !== state.c * (cd / state.d)) { step1_correct = false; errorMsg += 'числители после приведения; '; }
+                if (res_n !== n1 - n2 || res_d !== cd) { step1_correct = false; errorMsg += 'вычитание в скобках; '; }
+                
+                let fnExp = res_n * state.e, fdExp = res_d * state.f;
+                let div = gcd(fnExp, fdExp);
+                fnExp /= div; fdExp /= div;
+                if (fdExp < 0) { fnExp *= -1; fdExp *= -1; }
+
+                let uFn = fn, uFd = fd;
+                if (uFd < 0) { uFn *= -1; uFd *= -1; }
+                
+                if (uFn !== fnExp || uFd !== fdExp) { step1_correct = false; errorMsg += 'итоговое умножение (не забудьте сократить); '; }
+            }
+            
+            if (!step1_correct) {
+                feedback.textContent = errorMsg.replace(/; $/, '.');
+                feedback.style.color = 'var(--error)'; return;
+            }
+
+            document.querySelectorAll('#step1-ui .math-input, #step1-ui .fraction-input input').forEach(i => i.disabled = true);
+            feedback.textContent = 'Отлично! Переходим ко второй части...';
             feedback.style.color = 'var(--success)';
+            currentStep = 2;
+            setTimeout(generateTask, 2000);
 
-            if (currentStep === 1) {
-                // Если решили первую часть, переходим ко второй
-                feedback.textContent = 'Верно! Переходим ко второй части...';
-                currentStep = 2;
-                setTimeout(generateTask, 1500); // Генерируем пункт 2 через полторы секунды
-            } else {
-                // Если решили вторую часть, завершаем задание
-                feedback.textContent = 'Отлично! Задание выполнено. Возвращаемся в меню...';
-                
-                let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
-                progress[2] = true;
-                localStorage.setItem('vpr_progress', JSON.stringify(progress));
+        } else if (currentStep === 2 && state.step2Mode === 'calc_mul') {
+            let p1 = getVal('mul-part1'), p2 = getVal('mul-part2');
+            let sum = getVal('mul-sum'), dc = getVal('mul-dec-count');
+            let res1 = getVal('step2-res1').replace('.', ',');
 
-                setTimeout(() => {
-                    window.location.href = '../../index.html'; 
-                }, 1500);
+            if ([p1, p2, sum, dc, res1].includes('')) {
+                feedback.textContent = 'Заполните все поля в шаге умножения.';
+                feedback.style.color = '#e67e22'; return;
             }
 
-        } else {
-            feedback.textContent = 'Ошибка. Попробуй еще раз!';
-            feedback.style.color = 'var(--error)';
-            document.getElementById('answer-input').value = '';
-            document.getElementById('answer-input').focus();
+            if (Number(p1) !== state.mul.p1) {
+                feedback.textContent = 'Ошибка в первом действии умножения (на десятки).'; feedback.style.color = 'var(--error)'; return;
+            } else if (Number(p2) !== state.mul.p2) {
+                feedback.textContent = 'Ошибка во втором действии умножения (на единицы).'; feedback.style.color = 'var(--error)'; return;
+            } else if (Number(sum) !== state.mul.sum) {
+                feedback.textContent = 'Ошибка при сложении результатов умножения.'; feedback.style.color = 'var(--error)'; return;
+            } else if (Number(dc) !== state.mul.decCount) {
+                feedback.textContent = 'Неверно подсчитано количество знаков после запятой.'; feedback.style.color = 'var(--error)'; return;
+            } else if (res1 !== state.mul.finalStr) {
+                feedback.textContent = 'Ошибка в итоговом ответе! Проверьте, не забыли ли вы минус и правильно ли поставили запятую.'; feedback.style.color = 'var(--error)'; return;
+            }
+
+            document.querySelectorAll('#step2-mul-block input').forEach(i => i.disabled = true);
+            feedback.textContent = 'Умножение выполнено безупречно!';
+            feedback.style.color = 'var(--success)';
+            setTimeout(() => { renderStep2Column(); }, 1500);
+
+        } else if (currentStep === 2 && state.step2Mode === 'calc_col') {
+            let r_int = getVal('col-res-int');
+            let r_d1 = getVal('col-res-d1');
+            let r_d2 = getVal('col-res-d2');
+
+            if ([r_int, r_d1, r_d2].includes('')) {
+                feedback.textContent = 'Заполните все цифры результата.';
+                feedback.style.color = '#e67e22'; return;
+            }
+
+            if (r_int !== state.col.r_int || r_d1 !== state.col.r_d1 || r_d2 !== state.col.r_d2) {
+                feedback.textContent = 'Ошибка при вычитании в столбик. Проверьте все разряды.';
+                feedback.style.color = 'var(--error)'; return;
+            }
+
+            document.querySelectorAll('.col-input').forEach(i => i.disabled = true);
+            document.getElementById('check-btn').style.display = 'none';
+            feedback.textContent = 'Отлично! Задание полностью выполнено. Возвращаемся в меню...';
+            feedback.style.color = 'var(--success)';
+            
+            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+            progress[2] = true;
+            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+            setTimeout(() => { window.location.href = '../../index.html'; }, 2000);
         }
     }
 
-    document.getElementById('answer-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            checkAnswer();
-        }
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT') checkAnswer();
     });
 
-    // Запускаем первую часть при загрузке страницы
     window.onload = generateTask;
 </script>
 

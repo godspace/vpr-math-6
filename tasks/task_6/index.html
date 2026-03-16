@@ -21,13 +21,18 @@
             min-height: 100vh;
             margin: 0;
             padding: 1rem;
+            /* Блокировка выделения текста */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .trainer-card {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             text-align: center;
         }
@@ -47,7 +52,7 @@
             margin-bottom: 1.5rem;
             letter-spacing: 1px;
         }
-        input[type="number"] {
+        input[type="text"] {
             font-size: 1.5rem;
             padding: 0.5rem;
             width: 150px;
@@ -57,7 +62,7 @@
             margin-bottom: 1rem;
             transition: border-color 0.3s;
         }
-        input[type="number"]:focus {
+        input[type="text"]:focus {
             outline: none;
             border-color: var(--primary);
         }
@@ -92,11 +97,19 @@
             text-align: left;
             background-color: #fff3cd;
             border-left: 4px solid var(--accent);
-            padding: 1rem;
-            border-radius: 4px;
+            padding: 1.2rem;
+            border-radius: 6px;
             margin-bottom: 1.5rem;
             font-size: 1rem;
             color: #856404;
+        }
+        .example-box {
+            background-color: #fff;
+            padding: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid #ffeeba;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
         }
         .step { margin-bottom: 0.5rem; }
         
@@ -121,13 +134,13 @@
     <div class="expression-box" id="expression-display">
         </div>
     
-    <button class="hint-btn" onclick="showHint()">Как это решать?</button>
+    <button class="hint-btn" id="hint-btn" onclick="showHint()">Как это решать?</button>
     
     <div class="hint-box" id="hint-container">
         </div>
     
     <br>
-    <input type="number" id="answer-input" placeholder="Ответ" autocomplete="off">
+    <input type="text" id="answer-input" placeholder="Ответ" autocomplete="off">
     <br>
     <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
     
@@ -145,63 +158,107 @@
     };
 
     function generateTask() {
-        // Сброс интерфейса
         document.getElementById('answer-input').value = '';
         document.getElementById('feedback-display').textContent = '';
         document.getElementById('answer-input').disabled = false;
         document.getElementById('check-btn').style.display = 'inline-block';
         document.getElementById('hint-container').style.display = 'none';
+        document.getElementById('hint-btn').style.display = 'inline-block';
         document.getElementById('answer-input').focus();
 
-        // 1. Генерация параметров выражения: a * |varName - b| при varName = val
         let a = rand(-5, 5);
-        if (a === 0) a = -2; // Исключаем умножение на 0
+        if (a === 0) a = -2; 
         
         let b = rand(-10, 10);
         if (b === 0) b = 3; 
 
-        let varName = getRandomVar();
-        let val = rand(-10, 10);
-
-        // 2. Формирование строки выражения
-        let coefStr = a === -1 ? '-' : (a === 1 ? '' : a);
-        let signStr = b > 0 ? '-' : '+';
         let bAbs = Math.abs(b);
-        
+        let signStr = b > 0 ? '-' : '+';
+        let val;
+
+        // Гарантируем, что значение внутри модуля всегда будет отрицательным
+        if (b > 0) { 
+            // Вид |x - bAbs|. Чтобы было < 0, нужно val < bAbs
+            val = rand(-10, bAbs - 1); 
+        } else { 
+            // Вид |x + bAbs|. Чтобы было < 0, нужно val < -bAbs
+            val = rand(-15, -bAbs - 1); 
+        }
+
+        let varName = getRandomVar();
+
+        let coefStr = a === -1 ? '-' : (a === 1 ? '' : a);
         let expressionStr = `${coefStr}|${varName} ${signStr} ${bAbs}|`;
         let conditionStr = `при <i>${varName}</i> = ${val}`;
 
         document.getElementById('expression-display').innerHTML = `${expressionStr}<br><span style="font-size: 1.2rem; font-weight: normal;">${conditionStr}</span>`;
 
-        // 3. Вычисление правильного ответа
         let insideModule = b > 0 ? (val - bAbs) : (val + bAbs);
         let moduleResult = Math.abs(insideModule);
         currentAnswer = a * moduleResult;
 
-        // 4. Сохраняем данные для генерации подсказки
-        taskData = { a, bAbs, signStr, varName, val, insideModule, moduleResult, expressionStr };
+        taskData = { a, bAbs, signStr, varName, val };
     }
 
     function showHint() {
         const hintBox = document.getElementById('hint-container');
+        document.getElementById('hint-btn').style.display = 'none'; 
         hintBox.style.display = 'block';
         
-        let coefStr = taskData.a === -1 ? '-' : (taskData.a === 1 ? '' : taskData.a);
+        // Генерируем новый случайный пример
+        let ex_a = rand(-4, 4);
+        if (ex_a === 0) ex_a = 2;
+        if (ex_a === taskData.a) ex_a = ex_a === 4 ? -3 : ex_a + 1;
+
+        let ex_b = rand(-8, 8);
+        if (ex_b === 0) ex_b = 4;
+        let ex_bAbs = Math.abs(ex_b);
+        let ex_signStr = ex_b > 0 ? '-' : '+';
+        
+        let ex_val;
+        // Гарантируем, что в подсказке значение внутри модуля тоже будет отрицательным
+        if (ex_b > 0) {
+            ex_val = rand(-8, ex_bAbs - 1);
+        } else {
+            ex_val = rand(-12, -ex_bAbs - 1);
+        }
+        
+        // Если случайно совпало со значением из задачи, немного сдвинем
+        if (ex_val === taskData.val) ex_val--; 
+
+        let ex_varName = taskData.varName === 'x' ? 'y' : 'x';
+        let ex_coefStr = ex_a === -1 ? '-' : (ex_a === 1 ? '' : ex_a);
+
+        let ex_insideModule = ex_b > 0 ? (ex_val - ex_bAbs) : (ex_val + ex_bAbs);
+        let ex_moduleResult = Math.abs(ex_insideModule);
+        let ex_finalAnswer = ex_a * ex_moduleResult;
         
         hintBox.innerHTML = `
-            <div class="step"><b>Шаг 1:</b> Подставим ${taskData.val} вместо <i>${taskData.varName}</i>.<br>
-            Получим: ${coefStr}|${taskData.val} ${taskData.signStr} ${taskData.bAbs}|</div>
+            <div style="font-weight: bold; color: var(--primary); margin-bottom: 10px;">Рассмотрим на похожем примере:</div>
+            
+            <div class="example-box">
+                Найдите значение выражения: <b>${ex_coefStr}|${ex_varName} ${ex_signStr} ${ex_bAbs}|</b><br>
+                при <b><i>${ex_varName}</i> = ${ex_val}</b>
+            </div>
+
+            <div class="step"><b>Шаг 1:</b> Подставим ${ex_val} вместо <i>${ex_varName}</i>.<br>
+            Получим: ${ex_coefStr}|${ex_val} ${ex_signStr} ${ex_bAbs}|</div>
+            
             <div class="step"><b>Шаг 2:</b> Считаем то, что внутри модуля.<br>
-            ${taskData.val} ${taskData.signStr} ${taskData.bAbs} = ${taskData.insideModule}</div>
-            <div class="step"><b>Шаг 3:</b> Применяем модуль (он делает число положительным).<br>
-            |${taskData.insideModule}| = ${taskData.moduleResult}</div>
-            <div class="step"><b>Шаг 4:</b> Умножаем результат на коэффициент перед модулем.<br>
-            ${taskData.a} &middot; ${taskData.moduleResult} = ?</div>
+            ${ex_val} ${ex_signStr} ${ex_bAbs} = <b>${ex_insideModule}</b></div>
+            
+            <div class="step"><b>Шаг 3:</b> Применяем модуль (модуль делает любое отрицательное число положительным).<br>
+            |${ex_insideModule}| = <b>${ex_moduleResult}</b></div>
+            
+            <div class="step"><b>Шаг 4:</b> Умножаем результат на число перед модулем.<br>
+            ${ex_a} &middot; ${ex_moduleResult} = <b>${ex_finalAnswer}</b></div>
+            
+            <div style="margin-top: 15px; font-weight: bold; color: #d35400;">Теперь реши свой пример аналогичным образом!</div>
         `;
     }
 
     function checkAnswer() {
-        const inputStr = document.getElementById('answer-input').value;
+        const inputStr = document.getElementById('answer-input').value.trim();
         const feedback = document.getElementById('feedback-display');
         
         if (inputStr === '') {
@@ -211,6 +268,12 @@
         }
 
         const userAnswer = parseInt(inputStr, 10);
+
+        if (isNaN(userAnswer)) {
+            feedback.textContent = 'Пожалуйста, введите число.';
+            feedback.style.color = 'var(--error)';
+            return;
+        }
 
         if (userAnswer === currentAnswer) {
             feedback.textContent = 'Верно! Отличная работа.';
@@ -224,10 +287,10 @@
 
             setTimeout(() => {
                 window.location.href = '../../index.html'; 
-            }, 1500);
+            }, 2500);
 
         } else {
-            feedback.textContent = 'Ошибка. Попробуй еще раз!';
+            feedback.textContent = 'Ошибка. Проверь знаки и модуль!';
             feedback.style.color = 'var(--error)';
             document.getElementById('answer-input').value = '';
             document.getElementById('answer-input').focus();

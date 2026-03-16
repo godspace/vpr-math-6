@@ -21,15 +21,29 @@
             min-height: 100vh;
             margin: 0;
             padding: 1rem;
+            /* Блокировка выделения текста */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .trainer-card {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 700px;
+            max-width: 750px;
             width: 100%;
             text-align: center;
+        }
+        .step-indicator {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            display: block;
         }
         .task-text {
             font-size: 1.1rem;
@@ -54,7 +68,6 @@
             background-color: #333;
             transform: translateY(-50%);
         }
-        /* Стрелка на конце прямой */
         .line::after {
             content: '';
             position: absolute;
@@ -106,8 +119,8 @@
             position: absolute;
             top: calc(50% + 40px);
             transform: translateX(-50%);
-            width: 60px;
-            height: 35px;
+            width: 70px;
+            height: 50px; 
             border: 2px dashed #ccc;
             border-radius: 6px;
             display: flex;
@@ -132,10 +145,11 @@
         .options-container {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 1rem;
             flex-wrap: wrap;
             margin-bottom: 2rem;
-            min-height: 50px;
+            min-height: 60px;
         }
         .chip {
             padding: 8px 16px;
@@ -146,6 +160,11 @@
             cursor: pointer;
             user-select: none;
             transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            min-height: 30px;
         }
         .chip:hover {
             background-color: #f0f8ff;
@@ -156,8 +175,37 @@
             color: white;
             transform: scale(1.1);
         }
+        .chip.selected .fraction .num { border-color: white; }
         .chip.placed {
-            display: none; /* Скрываем плашку, если она вставлена в ячейку */
+            display: none; 
+        }
+
+        /* Стили для дробей */
+        .fraction-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            font-size: 0.95rem;
+            pointer-events: none; 
+        }
+        .fraction .num {
+            border-bottom: 2px solid currentColor;
+            padding: 0 4px;
+            line-height: 1.1;
+        }
+        .fraction .den {
+            padding: 0 4px;
+            line-height: 1.1;
+        }
+        .whole-number {
+            font-size: 1.1rem;
+            pointer-events: none;
         }
 
         button.action-btn {
@@ -178,54 +226,69 @@
             font-weight: bold;
             min-height: 1.5rem;
             margin-top: 1rem;
+            transition: opacity 0.3s;
         }
     </style>
 </head>
 <body>
 
-
 <div class="trainer-card">
     <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
-    <h2>Задание 7</h2>
+    <span class="step-indicator" id="step-display">Задание 7 (Пункт 1 из 2)</span>
+    <h2 id="task-title">Десятичные дроби</h2>
     
     <div class="task-text">
-        На координатной прямой отмечены точки A, B и C. Выберите из списка внизу числа и расставьте их в пустые окошки под соответствующими точками. 
+        На координатной прямой отмечены точки A, B и C. Выберите из списка числа и расставьте их в пустые окошки под соответствующими точками. 
         <br><br><b>Как играть:</b> Нажмите на число, а затем на пустую рамку под буквой.
     </div>
     
-    <div class="options-container" id="options-container">
-        </div>
+    <div class="options-container" id="options-container"></div>
 
     <div class="number-line-container" id="line-container">
         <div class="line"></div>
-        </div>
+    </div>
     
     <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
     <div class="feedback" id="feedback-display"></div>
 </div>
 
 <script>
+    let currentStep = 1;
     const AXIS_MIN = -1;
     const AXIS_MAX = 4;
-    let pointsData = []; // Хранит правильные значения для A, B, C
+    let pointsData = []; 
     let selectedChip = null;
 
     const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-    
-    // Перевод числа в проценты для позиционирования на CSS
     const getLeftPercent = (val) => ((val - AXIS_MIN) / (AXIS_MAX - AXIS_MIN)) * 100;
+
+    function renderFracHTML(num, den, whole = null, isNegative = false) {
+        let html = '<div class="fraction-container">';
+        if (isNegative) html += '<span class="whole-number">-</span>';
+        if (whole !== null && whole !== 0) {
+            html += `<span class="whole-number">${whole}</span>`;
+        }
+        html += `<div class="fraction"><span class="num">${num}</span><span class="den">${den}</span></div>`;
+        html += '</div>';
+        return html;
+    }
 
     function generateTask() {
         document.getElementById('feedback-display').textContent = '';
         document.getElementById('check-btn').style.display = 'inline-block';
         selectedChip = null;
 
+        if (currentStep === 1) {
+            document.getElementById('step-display').innerText = "Задание 7 (Пункт 1 из 2)";
+            document.getElementById('task-title').innerText = "Десятичные дроби";
+        } else {
+            document.getElementById('step-display').innerText = "Задание 7 (Пункт 2 из 2)";
+            document.getElementById('task-title').innerText = "Обыкновенные дроби";
+        }
+
         const lineContainer = document.getElementById('line-container');
-        
-        // Очищаем старую прямую, оставляя только саму линию
         lineContainer.innerHTML = '<div class="line"></div>';
 
-        // 1. Рисуем засечки (целые числа от -1 до 4)
         for (let i = AXIS_MIN; i <= AXIS_MAX; i++) {
             let leftPos = getLeftPercent(i);
             
@@ -242,26 +305,71 @@
             lineContainer.appendChild(label);
         }
 
-        // 2. Генерируем 5 уникальных случайных чисел
-        let values = new Set();
-        while(values.size < 5) {
-            // Генерируем числа вроде 0.67, 2.1, 3.5...
-            let num = (rand(AXIS_MIN * 100 + 20, AXIS_MAX * 100 - 20) / 100).toFixed(2);
-            // Убираем нули на конце (2.50 -> 2.5)
-            values.add(parseFloat(num)); 
+        let optionsData = [];
+
+        if (currentStep === 1) {
+            // Генерируем 8 уникальных десятичных чисел: 3 отрицательных, 5 положительных
+            let values = new Set();
+            
+            // 3 отрицательных (от -0.9 до -0.1)
+            while(Array.from(values).filter(v => v < 0).length < 3) {
+                let num = parseFloat((rand(-90, -10) / 100).toFixed(2));
+                values.add(num);
+            }
+            // 5 положительных (от 0.1 до 3.9)
+            while(Array.from(values).filter(v => v > 0).length < 5) {
+                let num = parseFloat((rand(10, 390) / 100).toFixed(2));
+                values.add(num);
+            }
+            
+            let sorted = Array.from(values).sort((a, b) => a - b);
+            
+            sorted.forEach(val => {
+                optionsData.push({ val: val, html: val.toString().replace('.', ',') });
+            });
+        } else {
+            // Генерируем 8 обыкновенных дробей: 3 отрицательных, 5 положительных разных типов
+            let seenVals = new Set();
+            
+            const addOption = (generator) => {
+                let opt;
+                do {
+                    opt = generator();
+                } while (seenVals.has(opt.val));
+                seenVals.add(opt.val);
+                optionsData.push(opt);
+            };
+
+            const genNeg = () => { let d = rand(2, 6); let n = rand(1, d-1); return { val: -n/d, html: renderFracHTML(n, d, null, true) }; };
+            const genProp = () => { let d = rand(2, 6); let n = rand(1, d-1); return { val: n/d, html: renderFracHTML(n, d) }; };
+            const genImp1 = () => { let d = rand(2, 5); let n = d + rand(1, d-1); return { val: n/d, html: renderFracHTML(n, d) }; };
+            const genMix2 = () => { let w = 2; let d = rand(2, 5); let n = rand(1, d-1); return { val: w + n/d, html: renderFracHTML(n, d, w) }; };
+            const genImp2 = () => { let d = rand(2, 5); let n = 2*d + rand(1, d-1); return { val: n/d, html: renderFracHTML(n, d) }; };
+            const genMix3 = () => { let w = 3; let d = rand(2, 4); let n = rand(1, d-1); return { val: w + n/d, html: renderFracHTML(n, d, w) }; };
+
+            // 3 отрицательных дроби
+            addOption(genNeg); addOption(genNeg); addOption(genNeg);
+            
+            // 5 положительных дробей (разных форматов)
+            addOption(genProp); 
+            addOption(genImp1); 
+            addOption(genMix2); 
+            addOption(genImp2); 
+            addOption(genMix3);
         }
         
-        let sortedValues = Array.from(values).sort((a, b) => a - b);
+        // Сортируем по возрастанию
+        optionsData.sort((a, b) => a.val - b.val);
         
-        // 3. Выбираем 3 числа, которые станут точками A, B и C
-        // Берем 1-е, 3-е и 5-е из отсортированного массива, чтобы они не слипались
+        // Индексы 0, 1, 2 всегда отрицательные. Индексы 3, 4, 5, 6, 7 всегда положительные.
+        // Берем точки с разбросом, гарантируя, что A будет отрицательной (индекс 1)
         pointsData = [
-            { id: 'A', val: sortedValues[0] },
-            { id: 'B', val: sortedValues[2] },
-            { id: 'C', val: sortedValues[4] }
+            { id: 'A', val: optionsData[1].val }, // Середина из 3-х отрицательных
+            { id: 'B', val: optionsData[4].val }, // Положительное число
+            { id: 'C', val: optionsData[7].val }  // Самое большое положительное число
         ];
 
-        // Рисуем точки и ячейки для ответа
+        // Отрисовка точек и ячеек (drop-zones)
         pointsData.forEach(p => {
             let leftPos = getLeftPercent(p.val);
             
@@ -285,59 +393,55 @@
             lineContainer.appendChild(dropZone);
         });
 
-        // 4. Отрисовываем 5 плашек в случайном порядке
+        // Отрисовка плашек в случайном порядке
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
         
-        // Перемешиваем массив
-        let shuffledValues = Array.from(values).sort(() => Math.random() - 0.5);
+        let shuffledOptions = [...optionsData].sort(() => Math.random() - 0.5);
         
-        shuffledValues.forEach(val => {
+        shuffledOptions.forEach((opt, index) => {
             let chip = document.createElement('div');
             chip.className = 'chip';
-            chip.textContent = val.toString().replace('.', ','); // Запятая для РФ
-            chip.dataset.val = val;
+            chip.innerHTML = opt.html;
+            chip.dataset.valId = index; 
+            chip.dataset.realVal = opt.val;
+            chip.dataset.htmlContent = opt.html;
             chip.onclick = () => handleChipClick(chip);
             optionsContainer.appendChild(chip);
         });
     }
 
     function handleChipClick(chip) {
-        // Снимаем выделение со всех
         document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-        // Выделяем текущую
         chip.classList.add('selected');
         selectedChip = chip;
         
-        // Подсвечиваем пустые ячейки
         document.querySelectorAll('.drop-zone:not(.filled)').forEach(dz => dz.classList.add('active-target'));
     }
 
     function handleDropZoneClick(dropZone) {
-        // Если ячейка уже заполнена, возвращаем число обратно наверх
         if (dropZone.classList.contains('filled')) {
-            let val = dropZone.dataset.currentVal;
-            // Ищем скрытую плашку и возвращаем её
-            let chip = document.querySelector(`.chip[data-val="${val}"]`);
+            let valId = dropZone.dataset.currentValId;
+            let chip = document.querySelector(`.chip[data-val-id="${valId}"]`);
             if (chip) chip.classList.remove('placed');
             
-            dropZone.textContent = '';
+            dropZone.innerHTML = '';
             dropZone.classList.remove('filled');
-            delete dropZone.dataset.currentVal;
+            delete dropZone.dataset.currentValId;
+            delete dropZone.dataset.currentRealVal;
             return;
         }
 
-        // Если ячейка пустая и выбрана плашка — вставляем её
         if (selectedChip) {
-            dropZone.textContent = selectedChip.textContent;
-            dropZone.dataset.currentVal = selectedChip.dataset.val;
+            dropZone.innerHTML = selectedChip.dataset.htmlContent;
+            dropZone.dataset.currentValId = selectedChip.dataset.valId;
+            dropZone.dataset.currentRealVal = selectedChip.dataset.realVal;
             dropZone.classList.add('filled');
             
             selectedChip.classList.remove('selected');
-            selectedChip.classList.add('placed'); // Прячем плашку
+            selectedChip.classList.add('placed'); 
             selectedChip = null;
             
-            // Убираем подсветку
             document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('active-target'));
         }
     }
@@ -351,10 +455,10 @@
             if (dz.classList.contains('filled')) {
                 filledCount++;
                 let pointId = dz.dataset.point;
-                let userVal = parseFloat(dz.dataset.currentVal);
+                let userVal = parseFloat(dz.dataset.currentRealVal);
                 let correctVal = pointsData.find(p => p.id === pointId).val;
                 
-                if (userVal !== correctVal) {
+                if (Math.abs(userVal - correctVal) > 0.001) {
                     allCorrect = false;
                     dz.style.borderColor = 'var(--error)';
                     dz.style.backgroundColor = '#fdeaea';
@@ -374,22 +478,28 @@
         }
 
         if (allCorrect) {
-            feedback.textContent = 'Верно! Отличный глазомер.';
-            feedback.style.color = 'var(--success)';
             document.getElementById('check-btn').style.display = 'none';
+            feedback.style.color = 'var(--success)';
 
-            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
-            progress[7] = true;
-            localStorage.setItem('vpr_progress', JSON.stringify(progress));
+            if (currentStep === 1) {
+                feedback.textContent = 'Отличный глазомер! Переходим ко второй части...';
+                currentStep = 2;
+                setTimeout(generateTask, 2500);
+            } else {
+                feedback.textContent = 'Всё абсолютно верно! Возвращаемся в меню...';
+                
+                let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+                progress[7] = true;
+                localStorage.setItem('vpr_progress', JSON.stringify(progress));
 
-            setTimeout(() => {
-                window.location.href = '../../index.html'; 
-            }, 1500);
+                setTimeout(() => {
+                    window.location.href = '../../index.html'; 
+                }, 2000);
+            }
         } else {
             feedback.textContent = 'Есть ошибки. Красные ячейки заполнены неверно!';
             feedback.style.color = 'var(--error)';
             
-            // Сбрасываем цвета через секунду, чтобы можно было исправить
             setTimeout(() => {
                 document.querySelectorAll('.drop-zone').forEach(dz => {
                     if (dz.classList.contains('filled')) {

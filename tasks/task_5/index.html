@@ -10,6 +10,8 @@
             --bg-color: #F4F7F9;
             --success: #2ECC71;
             --error: #E74C3C;
+            --warning: #F39C12;
+            --slot-bg: #fdfdfd;
         }
         body {
             font-family: 'Segoe UI', Roboto, sans-serif;
@@ -20,19 +22,23 @@
             min-height: 100vh;
             margin: 0;
             padding: 1rem;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .trainer-card {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 550px;
+            max-width: 700px;
             width: 100%;
             text-align: center;
         }
         .task-text {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
             color: #333;
             line-height: 1.5;
             text-align: left;
@@ -41,20 +47,141 @@
             border-left: 4px solid var(--primary);
             border-radius: 4px;
         }
-        input[type="number"] {
-            font-size: 1.5rem;
-            padding: 0.5rem;
-            width: 180px;
-            text-align: center;
-            border: 2px solid #ccc;
+        
+        .step-container {
+            border: 1px solid #e1e8ed;
             border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background-color: #fff;
+            text-align: left;
+            display: none; 
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .step-container.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .step-title {
+            font-weight: bold;
+            color: var(--primary);
             margin-bottom: 1rem;
-            transition: border-color 0.3s;
+            font-size: 1.1rem;
         }
-        input[type="number"]:focus {
-            outline: none;
-            border-color: var(--primary);
+
+        /* Дроби */
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 5px;
+            font-weight: bold;
+            pointer-events: none;
         }
+        .fraction .num {
+            border-bottom: 2px solid #333;
+            padding: 0 5px;
+            line-height: 1.2;
+        }
+        .fraction .den {
+            padding: 0 5px;
+            line-height: 1.2;
+        }
+
+        /* Инпуты */
+        .fraction-input {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+            vertical-align: middle;
+        }
+        .fraction-input input {
+            width: 100%;
+            text-align: center;
+            font-size: 1.1rem;
+            padding: 4px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+        .fraction-input input:focus { border-color: var(--primary); outline: none; }
+        .fraction-input .divider {
+            width: 100%; height: 2px; background-color: #2c3e50; margin: 4px 0;
+        }
+        
+        .math-input {
+            text-align: center; font-size: 1.2rem; padding: 8px;
+            border: 2px solid #bdc3c7; border-radius: 6px; transition: 0.3s; width: 100px;
+        }
+        .math-input:focus { border-color: var(--primary); outline: none; }
+
+        /* Банк элементов и слоты */
+        .bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            padding: 10px;
+            background: #f0f3f5;
+            border-radius: 8px;
+            justify-content: center;
+        }
+        .bank-item {
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+        }
+        .bank-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .bank-item:hover .fraction .num { border-color: white; }
+        
+        .expression-builder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .slot {
+            width: 70px;
+            height: 60px;
+            border: 2px dashed #95a5a6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--slot-bg);
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .slot:hover { border-color: var(--error); background: #fdf0f0; }
+        .slot.filled { border: 2px solid var(--primary); border-style: solid; }
+        .slot-operator { width: 50px; }
+
+        .hint { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 1rem; display: block; }
+        
         button.action-btn {
             background-color: var(--primary);
             color: white;
@@ -66,146 +193,280 @@
             transition: 0.2s;
             width: 100%;
             max-width: 250px;
+            margin-top: 10px;
+            font-weight: bold;
         }
         button.action-btn:hover { background-color: #357ABD; }
-        .feedback {
-            font-size: 1.1rem;
-            font-weight: bold;
-            min-height: 1.5rem;
-            margin-top: 1rem;
-        }
+        .feedback { font-size: 1.1rem; font-weight: bold; min-height: 1.5rem; margin-top: 1rem; }
     </style>
 </head>
 <body>
 
 <div class="trainer-card">
     <a href="../../index.html" style="position: absolute; top: 25px; left: 25px; text-decoration: none; background-color: #ecf0f1; color: #2c3e50; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.backgroundColor='#bdc3c7'" onmouseout="this.style.backgroundColor='#ecf0f1'">&#8592; В меню</a>
-    <h2>Задание 5</h2>
+    <h2>Задание 5. Проценты</h2>
     
-    <div class="task-text" id="task-display">
+    <div class="task-text" id="task-display"></div>
+    
+    <div class="step-container active" id="step1-container">
+        <div class="step-title">Шаг 1. Перевод процентов</div>
+        <span class="hint">Запишите <span id="percent-display"></span>% в виде обыкновенной дроби.</span>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+            <div style="font-size: 1.2rem; font-weight: bold;"><span id="percent-val"></span>% = </div>
+            <div class="fraction-input">
+                <input type="text" id="step1-num" autocomplete="off">
+                <div class="divider"></div>
+                <input type="text" id="step1-den" autocomplete="off">
+            </div>
         </div>
-    
-    <input type="number" id="answer-input" placeholder="Ответ (руб.)" autocomplete="off">
-    <br>
-    <button class="action-btn" id="check-btn" onclick="checkAnswer()">Проверить</button>
-    
+        <button class="action-btn" onclick="checkStep1()">Проверить дробь</button>
+    </div>
+
+    <div class="step-container" id="step2-container">
+        <div class="step-title">Шаг 2. Вычисление изменения цены</div>
+        <span class="hint">Кликайте по элементам из рамки, чтобы составить выражение. Найдите, на сколько рублей изменилась цена. (Чтобы убрать элемент из клетки, кликните по ней).</span>
+        
+        <div class="bank" id="bank-step2">
+            </div>
+
+        <div class="expression-builder">
+            <div class="slot" id="s2-0" onclick="clearSlot(2, 0)"></div>
+            <div class="slot slot-operator" id="s2-1" onclick="clearSlot(2, 1)"></div>
+            <div class="slot" id="s2-2" onclick="clearSlot(2, 2)"></div>
+            <span style="font-size: 1.5rem; font-weight: bold;">=</span>
+            <input type="text" id="step2-ans" class="math-input" placeholder="Ответ" autocomplete="off">
+        </div>
+        <button class="action-btn" onclick="checkStep2()">Проверить выражение</button>
+    </div>
+
+    <div class="step-container" id="step3-container">
+        <div class="step-title">Шаг 3. Итоговая стоимость</div>
+        <span class="hint" id="hint-step3">Составьте финальное выражение, чтобы узнать новую цену.</span>
+        
+        <div class="bank" id="bank-step3">
+            </div>
+
+        <div class="expression-builder">
+            <div class="slot" id="s3-0" onclick="clearSlot(3, 0)"></div>
+            <div class="slot slot-operator" id="s3-1" onclick="clearSlot(3, 1)"></div>
+            <div class="slot" id="s3-2" onclick="clearSlot(3, 2)"></div>
+            <span style="font-size: 1.5rem; font-weight: bold;">=</span>
+            <input type="text" id="step3-ans" class="math-input" placeholder="Итог" autocomplete="off">
+        </div>
+        <button class="action-btn" onclick="checkStep3()">Завершить задачу</button>
+    </div>
+
     <div class="feedback" id="feedback-display"></div>
 </div>
 
 <script>
-    let currentAnswer = 0;
+    let state = {};
+    let slotsData = {
+        2: [null, null, null],
+        3: [null, null, null]
+    };
 
     const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const renderFraction = (n, d) => `<div class="fraction"><span class="num">${n}</span><span class="den">${d}</span></div>`;
 
-    // База сюжетов для задач
     const plots = [
-        { 
-            subject: "Ежемесячная плата за телефон", 
-            pronoun: "она", 
-            actions: ["вырастет", "снизится"] 
-        },
-        { 
-            subject: "Абонентская плата за домашний интернет", 
-            pronoun: "она", 
-            actions: ["повысится", "уменьшится"] 
-        },
-        { 
-            subject: "Закупочная цена материалов для фабрики", 
-            pronoun: "она", 
-            actions: ["вырастет", "упадёт"] 
-        },
-        { 
-            subject: "Цена билета на междугородний автобус", 
-            pronoun: "она", 
-            actions: ["подорожает", "подешевеет"] 
-        },
-        { 
-            subject: "Стоимость бизнес-ланча в кафе", 
-            pronoun: "она", 
-            actions: ["увеличится", "снизится"] 
-        }
+        { subject: "Ежемесячная плата за телефон", pronoun: "она", actions: ["вырастет", "снизится"] },
+        { subject: "Абонентская плата за домашний интернет", pronoun: "она", actions: ["повысится", "уменьшится"] },
+        { subject: "Закупочная цена материалов для фабрики", pronoun: "она", actions: ["вырастет", "упадёт"] },
+        { subject: "Цена билета на междугородний автобус", pronoun: "она", actions: ["подорожает", "подешевеет"] }
     ];
 
     function generateTask() {
-        // Сброс интерфейса
-        document.getElementById('answer-input').value = '';
-        document.getElementById('feedback-display').textContent = '';
-        document.getElementById('answer-input').disabled = false;
-        document.getElementById('check-btn').style.display = 'inline-block';
-        document.getElementById('answer-input').focus();
-
-        // 1. Выбираем случайный сюжет
         const plot = plots[rand(0, plots.length - 1)];
-        
-        // 2. Выбираем, увеличивается цена или уменьшается (0 - рост, 1 - падение)
         const actionIndex = rand(0, 1);
         const actionWord = plot.actions[actionIndex];
         const isIncrease = actionIndex === 0;
 
-        // 3. Генерируем числа так, чтобы процент от суммы был целым числом
-        // Цена от 200 до 1200 с шагом 20 рублей (200, 220, 240... 1200)
         const basePrice = rand(10, 60) * 20; 
-        
-        // Процент (5%, 10%, 15%, 20%, 25%)
         const percent = rand(1, 5) * 5; 
-
-        // 4. Считаем правильный ответ
         const delta = (basePrice * percent) / 100;
-        currentAnswer = isIncrease ? basePrice + delta : basePrice - delta;
+        const finalAnswer = isIncrease ? basePrice + delta : basePrice - delta;
 
-        // 5. Выводим текст задачи
-        let text = `${plot.subject} составляет ${basePrice} рублей. Сколько рублей составит `;
-        
-        // Корректируем падеж для второй части предложения
+        state = { basePrice, percent, delta, finalAnswer, isIncrease, actionWord, step2Items: [], step3Items: [] };
+
         let subjectLower = plot.subject.toLowerCase();
-        if (subjectLower.includes("цена") || subjectLower.includes("плата") || subjectLower.includes("стоимость")) {
-             // оставляем как есть, звучит нормально
-        }
+        let text = `<b>Условие:</b> ${plot.subject} составляет ${basePrice} рублей. Сколько рублей составит ${subjectLower}, если ${plot.pronoun} <u style="color:var(--primary); font-weight:bold;">${actionWord} на ${percent}%</u>?`;
         
-        text += `${subjectLower}, если ${plot.pronoun} ${actionWord} на ${percent}%?`;
-        
-        document.getElementById('task-display').textContent = text;
+        document.getElementById('task-display').innerHTML = text;
+        document.getElementById('percent-display').innerText = percent;
+        document.getElementById('percent-val').innerText = percent;
+        document.getElementById('step1-num').focus();
     }
 
-    function checkAnswer() {
-        const inputStr = document.getElementById('answer-input').value;
-        const feedback = document.getElementById('feedback-display');
+    function showFeedback(msg, isSuccess) {
+        const fb = document.getElementById('feedback-display');
+        fb.textContent = msg;
+        fb.style.color = isSuccess ? 'var(--success)' : 'var(--error)';
+        if(!isSuccess) setTimeout(() => fb.textContent = '', 3000);
+    }
+
+    function checkStep1() {
+        let n = parseInt(document.getElementById('step1-num').value.trim());
+        let d = parseInt(document.getElementById('step1-den').value.trim());
         
-        if (inputStr === '') {
-            feedback.textContent = 'Введите ответ!';
-            feedback.style.color = '#e67e22';
-            return;
+        if (isNaN(n) || isNaN(d) || d === 0) {
+            showFeedback('Введите корректные числа в числитель и знаменатель.', false); return;
         }
 
-        const userAnswer = parseInt(inputStr, 10);
-
-        if (userAnswer === currentAnswer) {
-            feedback.textContent = 'Верно! Отличный расчёт.';
-            feedback.style.color = 'var(--success)';
-            document.getElementById('answer-input').disabled = true;
-            document.getElementById('check-btn').style.display = 'none';
-
-            let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
-            progress[5] = true;
-            localStorage.setItem('vpr_progress', JSON.stringify(progress));
-
+        if (n * 100 === d * state.percent) {
+            showFeedback('Верно! Дробь записана правильно.', true);
+            document.getElementById('step1-num').disabled = true;
+            document.getElementById('step1-den').disabled = true;
+            event.target.style.display = 'none';
+            
             setTimeout(() => {
-                window.location.href = '../../index.html'; 
-            }, 1500);
-
+                document.getElementById('feedback-display').textContent = '';
+                setupStep2();
+            }, 1000);
         } else {
-            feedback.textContent = 'Ошибка. Проверь вычисления ещё раз!';
-            feedback.style.color = 'var(--error)';
-            document.getElementById('answer-input').value = '';
-            document.getElementById('answer-input').focus();
+            showFeedback('Неверно. Вспомни: 1% — это одна сотая часть (1/100).', false);
         }
     }
 
-    document.getElementById('answer-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            checkAnswer();
+    function handleSlotFill(step, itemIndex) {
+        let item = step === 2 ? state.step2Items[itemIndex] : state.step3Items[itemIndex];
+        let idx = slotsData[step].indexOf(null);
+        if (idx !== -1) {
+            slotsData[step][idx] = { type: item.t, value: item.v };
+            let slotEl = document.getElementById(`s${step}-${idx}`);
+            slotEl.innerHTML = item.h;
+            slotEl.classList.add('filled');
         }
-    });
+    }
+
+    function clearSlot(step, idx) {
+        slotsData[step][idx] = null;
+        let slotEl = document.getElementById(`s${step}-${idx}`);
+        slotEl.innerHTML = '';
+        slotEl.classList.remove('filled');
+    }
+
+    function setupStep2() {
+        document.getElementById('step2-container').classList.add('active');
+        const bank = document.getElementById('bank-step2');
+        
+        const items = [
+            { t: 'num', v: state.basePrice, h: state.basePrice },
+            { t: 'num', v: state.basePrice + 50, h: state.basePrice + 50 }, 
+            { t: 'frac', v: 'frac', h: renderFraction(state.percent, 100) },
+            { t: 'frac', v: 'fake', h: renderFraction(100, state.percent) }, 
+            { t: 'op', v: '+', h: '+' },
+            { t: 'op', v: '-', h: '-' },
+            { t: 'op', v: '*', h: '&middot;' },
+            { t: 'op', v: ':', h: ':' }
+        ];
+        
+        items.sort(() => Math.random() - 0.5);
+        state.step2Items = items; 
+
+        bank.innerHTML = items.map((i, index) => 
+            `<div class="bank-item" onclick="handleSlotFill(2, ${index})">${i.h}</div>`
+        ).join('');
+    }
+
+    function checkStep2() {
+        let s = slotsData[2];
+        let ans = document.getElementById('step2-ans').value.trim();
+        
+        if (s.includes(null) || ans === '') {
+            showFeedback('Заполните все пустые клетки и введите ответ!', false); return;
+        }
+
+        let isValidExp = false;
+        // Исправлено: обращаемся к .value вместо .v
+        if (s[1].value === '*') {
+            if ((s[0].value == state.basePrice && s[2].value === 'frac') || 
+                (s[0].value === 'frac' && s[2].value == state.basePrice)) {
+                isValidExp = true;
+            }
+        }
+
+        if (!isValidExp) {
+            showFeedback('Выражение составлено неверно. Чтобы найти процент от числа, нужно умножить это число на дробь.', false); return;
+        }
+
+        if (parseInt(ans) !== state.delta) {
+            showFeedback('Выражение верное, но ошибка в вычислении ответа. Пересчитай!', false); return;
+        }
+
+        showFeedback(`Отлично! Изменение цены составит ${state.delta} руб.`, true);
+        document.getElementById('step2-ans').disabled = true;
+        event.target.style.display = 'none';
+
+        setTimeout(() => {
+            document.getElementById('feedback-display').textContent = '';
+            setupStep3();
+        }, 1500);
+    }
+
+    function setupStep3() {
+        document.getElementById('step3-container').classList.add('active');
+        const hint = document.getElementById('hint-step3');
+        hint.innerHTML = `По условию цена <u style="color:var(--primary); font-weight:bold;">${state.actionWord}</u>. Составьте финальное действие.`;
+
+        const bank = document.getElementById('bank-step3');
+        const items = [
+            { t: 'num', v: state.basePrice, h: state.basePrice },
+            { t: 'num', v: state.delta, h: state.delta },
+            { t: 'num', v: state.delta + 15, h: state.delta + 15 }, 
+            { t: 'op', v: '+', h: '+' },
+            { t: 'op', v: '-', h: '-' }
+        ];
+
+        state.step3Items = items; 
+
+        bank.innerHTML = items.map((i, index) => 
+            `<div class="bank-item" onclick="handleSlotFill(3, ${index})">${i.h}</div>`
+        ).join('');
+    }
+
+    function checkStep3() {
+        let s = slotsData[3];
+        let ans = document.getElementById('step3-ans').value.trim();
+        
+        if (s.includes(null) || ans === '') {
+            showFeedback('Заполните все поля!', false); return;
+        }
+
+        let isValidExp = false;
+        // Исправлено: обращаемся к .value вместо .v
+        if (state.isIncrease) {
+            if (s[1].value === '+' && 
+               ((s[0].value == state.basePrice && s[2].value == state.delta) || 
+                (s[0].value == state.delta && s[2].value == state.basePrice))) {
+                isValidExp = true;
+            }
+        } else {
+            if (s[1].value === '-' && s[0].value == state.basePrice && s[2].value == state.delta) {
+                isValidExp = true;
+            }
+        }
+
+        if (!isValidExp) {
+            showFeedback('Выражение составлено неверно. Внимательно прочитайте, увеличилась цена или уменьшилась!', false); return;
+        }
+
+        if (parseInt(ans) !== state.finalAnswer) {
+            showFeedback('Ошибка в финальном вычислении.', false); return;
+        }
+
+        showFeedback('Задача решена абсолютно верно! Молодец!', true);
+        document.getElementById('step3-ans').disabled = true;
+        event.target.style.display = 'none';
+
+        let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
+        progress[5] = true;
+        localStorage.setItem('vpr_progress', JSON.stringify(progress));
+
+        setTimeout(() => {
+            window.location.href = '../../index.html'; 
+        }, 2000);
+    }
 
     window.onload = generateTask;
 </script>

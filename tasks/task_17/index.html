@@ -21,6 +21,11 @@
             min-height: 100vh;
             margin: 0;
             padding: 1rem;
+            /* Блокировка выделения текста */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .trainer-card {
             background: white;
@@ -39,24 +44,41 @@
             margin-bottom: 1.5rem;
         }
         .header-bar h2 { margin: 0; color: #333; }
-        .date-badge {
-            background-color: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            color: #777;
-            font-family: monospace;
-        }
         
         .task-container {
             background-color: #f8f9fa;
             padding: 1.5rem;
             border-radius: 8px;
             border-left: 4px solid var(--primary);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             font-size: 1.25rem;
             color: #2c3e50;
             line-height: 1.6;
+        }
+
+        .hint-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            font-weight: bold;
+            padding: 0;
+        }
+        .hint-box {
+            display: none;
+            text-align: left;
+            background-color: #fff3cd;
+            border-left: 4px solid var(--accent);
+            padding: 1.2rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            color: #856404;
+            line-height: 1.5;
         }
 
         /* Интерактивный черновик */
@@ -107,7 +129,7 @@
         
         /* Лог проверок */
         .log-list {
-            max-height: 150px;
+            max-height: 180px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -115,16 +137,16 @@
         }
         .log-item {
             background-color: white;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 4px;
-            font-size: 1rem;
+            font-size: 1.05rem;
             display: flex;
             justify-content: space-between;
-            border-left: 3px solid #ccc;
+            border-left: 4px solid #ccc;
             animation: slideDown 0.3s ease;
         }
         .log-item.bad { border-color: var(--error); }
-        .log-item.good { border-color: var(--success); font-weight: bold; }
+        .log-item.good { border-color: var(--success); font-weight: bold; background-color: #f1fdf6; }
 
         /* Финальный ответ */
         .final-answer-row {
@@ -194,7 +216,10 @@
     </div>
     
     <div class="task-container" id="task-text">
-        </div>
+    </div>
+
+    <button class="hint-btn" id="hint-btn" onclick="showHint()">С чего начать?</button>
+    <div class="hint-box" id="hint-box"></div>
     
     <div class="lab-container">
         <div class="lab-title">
@@ -202,16 +227,16 @@
             <span style="font-size: 0.9rem; font-weight: normal; color: #7f8c8d;">Проверяй свои гипотезы здесь</span>
         </div>
         <div class="lab-input-row">
-            <input type="number" id="test-input" placeholder="Введи двузначное число..." autocomplete="off">
+            <input type="text" id="test-input" placeholder="Введи двузначное число..." autocomplete="off" maxlength="2">
             <button class="lab-btn" onclick="testNumber()">Проверить</button>
         </div>
         <div class="log-list" id="log-list">
-            </div>
+        </div>
     </div>
     
     <div class="final-answer-row">
         <div style="font-weight: bold; color: #2c3e50;">Итоговый ответ:</div>
-        <input type="number" id="answer-input" placeholder="Число" autocomplete="off">
+        <input type="text" id="answer-input" placeholder="Число" autocomplete="off" maxlength="2">
         <button class="action-btn" id="check-btn" onclick="checkFinalAnswer()">Готово!</button>
         <div class="feedback" id="feedback-display"></div>
     </div>
@@ -219,7 +244,7 @@
 
 <div class="trainer-card success-screen" id="success-screen">
     <h3>Победа! 🏆</h3>
-    <p>Вы успешно завершили все задания тренажёра ВПР.</p>
+    <p style="font-size: 1.2rem; color: #34495e;">Вы успешно завершили все задания тренажёра ВПР.</p>
     <button class="action-btn" onclick="window.location.href='../../index.html'" style="margin-top: 2rem;">Вернуться в главное меню</button>
 </div>
 
@@ -229,7 +254,7 @@
     // Варианты задач (k - во сколько раз десятков меньше, diff - на сколько увеличивается, ans - правильный ответ)
     const scenarios = [
         { k: 2, diff: 18, ans: 24 },
-        { k: 2, diff: 27, ans: 36 }, // демоверсия
+        { k: 2, diff: 27, ans: 36 }, 
         { k: 2, diff: 36, ans: 48 },
         { k: 3, diff: 36, ans: 26 },
         { k: 3, diff: 54, ans: 39 },
@@ -248,9 +273,46 @@
         document.getElementById('test-input').focus();
     }
 
+    function showHint() {
+        let possibleNumbers = [];
+        // Генерируем возможные числа по первому условию
+        for (let i = 1; i <= 9; i++) {
+            let units = i * currentTask.k;
+            if (units < 10) {
+                possibleNumbers.push(i.toString() + units.toString());
+            }
+        }
+        
+        document.getElementById('hint-btn').style.display = 'none';
+        let hintBox = document.getElementById('hint-box');
+        hintBox.style.display = 'block';
+        hintBox.innerHTML = `
+            <b>Шаг 1.</b> Выпишем все двузначные числа, в которых десятки в <b>${currentTask.k}</b> раза меньше единиц. 
+            Это могут быть только числа: <b>${possibleNumbers.join(', ')}</b>.<br><br>
+            <b>Шаг 2.</b> Теперь по очереди вводите их в калькулятор ниже, пока не найдете то, которое увеличится ровно на <b>${currentTask.diff}</b>.
+        `;
+    }
+
     function testNumber() {
         let inputStr = document.getElementById('test-input').value.trim();
-        if (!inputStr || inputStr.length !== 2) return; // Проверка на двузначность
+        
+        // Проверка: строка должна состоять ровно из 2 цифр
+        if (!/^\d{2}$/.test(inputStr)) {
+            let logList = document.getElementById('log-list');
+            let errorItem = document.createElement('div');
+            errorItem.className = 'log-item bad';
+            errorItem.innerHTML = `<span style="color:var(--error);">Введите корректное <b>двузначное</b> число!</span>`;
+            logList.insertBefore(errorItem, logList.firstChild);
+            
+            document.getElementById('test-input').value = '';
+            document.getElementById('test-input').focus();
+            
+            // Удаляем ошибку через 2 секунды, чтобы не засорять лог
+            setTimeout(() => {
+                if(errorItem.parentNode) errorItem.remove();
+            }, 2000);
+            return;
+        }
         
         let num = parseInt(inputStr, 10);
         let tens = Math.floor(num / 10);
@@ -272,9 +334,10 @@
             logItem.innerHTML = `<span>Попытка: <b>${num}</b> &rarr; <b>${reversedNum}</b></span> <span>Разница: +${diff} ✅ Идеально!</span>`;
             // Автоматически подставляем в ответ, если ребёнок нашёл число в черновике
             document.getElementById('answer-input').value = num;
+            document.getElementById('answer-input').style.borderColor = "var(--success)";
         } else {
             logItem.classList.add('bad');
-            let kStatus = isKCorrect ? '' : `(десятки не в ${currentTask.k} р. меньше) `;
+            let kStatus = isKCorrect ? '' : `(десятки не в ${currentTask.k} р. меньше)`;
             logItem.innerHTML = `<span>Попытка: <b>${num}</b> &rarr; <b>${reversedNum}</b></span> <span style="font-size: 0.9em; color: #7f8c8d;">Разница: ${diff > 0 ? '+'+diff : diff} ❌ ${kStatus}</span>`;
         }
         
@@ -287,13 +350,18 @@
     document.getElementById('test-input').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') testNumber();
     });
+    
+    // Запуск финальной проверки по Enter в поле ответа
+    document.getElementById('answer-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkFinalAnswer();
+    });
 
     function checkFinalAnswer() {
         let inputStr = document.getElementById('answer-input').value.trim();
         let feedback = document.getElementById('feedback-display');
         
-        if (inputStr === '') {
-            feedback.textContent = 'Введите итоговый ответ!';
+        if (!/^\d{2}$/.test(inputStr)) {
+            feedback.textContent = 'Введите двузначное число!';
             feedback.style.color = '#e67e22';
             return;
         }

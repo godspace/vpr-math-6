@@ -22,13 +22,18 @@
             min-height: 100vh;
             margin: 0;
             padding: 1rem;
+            /* Блокировка выделения текста */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         .trainer-card {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 650px;
+            max-width: 700px;
             width: 100%;
         }
         .header-bar {
@@ -47,14 +52,6 @@
             border-radius: 20px;
             font-weight: bold;
             font-size: 0.95rem;
-        }
-        .date-badge {
-            background-color: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            color: #777;
-            font-family: monospace;
         }
         .task-text {
             font-size: 1.25rem;
@@ -136,7 +133,6 @@
             margin: 0 5px;
         }
         
-        /* Поле для ручного ввода ответа */
         .step-input-wrapper {
             display: flex;
             align-items: center;
@@ -169,6 +165,7 @@
             margin-bottom: 1.5rem;
             padding-top: 1rem;
             border-top: 1px dashed #ccc;
+            min-height: 80px;
         }
         .chip {
             padding: 8px 16px;
@@ -201,6 +198,7 @@
             cursor: pointer;
             transition: 0.2s;
             font-weight: bold;
+            max-width: 300px;
         }
         button.action-btn:hover { background-color: #357ABD; }
         
@@ -233,11 +231,8 @@
         <span class="progress-badge" id="progress-badge">Задача 1 из 2</span>
     </div>
     
-    <div class="task-text" id="task-display">
-        </div>
-    
-    <div id="builder-area">
-        </div>
+    <div class="task-text" id="task-display"></div>
+    <div id="builder-area"></div>
 </div>
 
 <script>
@@ -245,69 +240,104 @@
     let currentTaskIndex = 0;
     let currentStepIndex = 0;
 
+    const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
     // База сбалансированных задач на движение
     const motionScenarios = [
         { S: 45, t_down: 3, v_cur: 3, v_down: 15, v_own: 12, v_up: 9, t_up: 5 },
         { S: 48, t_down: 4, v_cur: 2, v_down: 12, v_own: 10, v_up: 8, t_up: 6 },
-        { S: 72, t_down: 4, v_cur: 3, v_down: 18, v_own: 15, v_up: 12, t_up: 6 }
+        { S: 72, t_down: 4, v_cur: 3, v_down: 18, v_own: 15, v_up: 12, t_up: 6 },
+        { S: 60, t_down: 3, v_cur: 4, v_down: 20, v_own: 16, v_up: 12, t_up: 5 }
     ];
 
-    // База сбалансированных задач на работу
-    const workScenarios = [
-        { V: 60, t1: 3, t2: 6, p1: 20, p2: 10, p_tot: 30, t_both: 2 },
-        { V: 120, t1: 3, t2: 6, p1: 40, p2: 20, p_tot: 60, t_both: 2 },
-        { V: 144, t1: 6, t2: 12, p1: 24, p2: 12, p_tot: 36, t_both: 4 }
-    ];
+    const vehicles = ["Теплоход", "Катер", "Моторная лодка"];
 
     function generateMotionTask() {
-        const d = motionScenarios[Math.floor(Math.random() * motionScenarios.length)];
+        const d = motionScenarios[rand(0, motionScenarios.length - 1)];
+        const vehicle = vehicles[rand(0, vehicles.length - 1)];
+        const vLower = vehicle.toLowerCase();
+
         return {
-            text: `Теплоход прошёл по течению реки <b>${d.S} км</b> за <b>${d.t_down} ч</b>. Сколько времени понадобится теплоходу на обратный путь, если скорость течения реки равна <b>${d.v_cur} км/ч</b>?`,
+            text: `${vehicle} прошёл по течению реки <b>${d.S} км</b> за <b>${d.t_down} ч</b>. Сколько времени понадобится ${vLower}у на обратный путь, если скорость течения реки равна <b>${d.v_cur} км/ч</b>?`,
             steps: [
                 {
-                    text: "1) Скорость теплохода по течению реки:",
+                    text: `1) Скорость (${vLower}а) по течению реки:`,
                     combos: [ [d.S.toString(), ":", d.t_down.toString()] ],
                     result: d.v_down, unit: "км/ч",
-                    chips: [d.S.toString(), d.t_down.toString(), ":", "·", "-", d.v_cur.toString(), "15"]
+                    // Ложные: t_up, v_cur, сложение (ошибка)
+                    chips: [...new Set([d.S.toString(), d.t_down.toString(), ":", "·", "-", "+", d.v_cur.toString(), d.t_up.toString(), (d.S + d.t_down).toString()])]
                 },
                 {
-                    text: "2) Собственная скорость теплохода:",
+                    text: `2) Собственная скорость (${vLower}а):`,
                     combos: [ [d.v_down.toString(), "-", d.v_cur.toString()] ],
                     result: d.v_own, unit: "км/ч",
-                    chips: [d.v_down.toString(), d.v_cur.toString(), "-", "+", ":", d.S.toString()]
+                    // Ложные: v_down, S, сложение вместо вычитания (частая ошибка)
+                    chips: [...new Set([d.v_down.toString(), d.v_cur.toString(), "-", "+", ":", "·", d.S.toString(), d.t_down.toString(), (d.v_down + d.v_cur).toString()])]
                 },
                 {
-                    text: "3) Скорость теплохода против течения:",
+                    text: `3) Скорость (${vLower}а) против течения:`,
                     combos: [ [d.v_own.toString(), "-", d.v_cur.toString()] ],
                     result: d.v_up, unit: "км/ч",
-                    chips: [d.v_own.toString(), d.v_cur.toString(), "-", "+", "·", d.v_down.toString()]
+                    // Ложные: v_down из первого действия, S, сложение
+                    chips: [...new Set([d.v_own.toString(), d.v_cur.toString(), "-", "+", "·", ":", d.v_down.toString(), d.S.toString(), (d.v_own + d.v_cur).toString()])]
                 },
                 {
                     text: "4) Время на обратный путь:",
                     combos: [ [d.S.toString(), ":", d.v_up.toString()] ],
                     result: d.t_up, unit: "ч",
-                    chips: [d.S.toString(), d.v_up.toString(), ":", "-", "·", d.t_down.toString()]
+                    // Ложные: v_down, v_own из предыдущих действий, t_down
+                    chips: [...new Set([d.S.toString(), d.v_up.toString(), ":", "-", "·", "+", d.t_down.toString(), d.v_down.toString(), d.v_own.toString()])]
                 }
             ]
         };
     }
 
+    // База сбалансированных задач на работу
+    const workScenarios = [
+        { V: 60, t1: 3, t2: 6, p1: 20, p2: 10, p_tot: 30, t_both: 2 },
+        { V: 120, t1: 3, t2: 6, p1: 40, p2: 20, p_tot: 60, t_both: 2 },
+        { V: 144, t1: 6, t2: 12, p1: 24, p2: 12, p_tot: 36, t_both: 4 },
+        { V: 90, t1: 5, t2: 10, p1: 18, p2: 9, p_tot: 27, t_both: 3 }
+    ];
+
+    const workThemes = [
+        {
+            a1: "Первый мастер", a2: "второй мастер",
+            action1: "изготовить", action2: "сделать эти же детали", action3: "изготовят эту партию",
+            items: "деталей", unit: "дет./ч"
+        },
+        {
+            a1: "Первый принтер", a2: "второй принтер",
+            action1: "напечатать", action2: "напечатать этот же текст", action3: "напечатают этот текст",
+            items: "страниц", unit: "стр./ч"
+        },
+        {
+            a1: "Первый насос", a2: "второй насос",
+            action1: "перекачать", action2: "перекачать этот же объем", action3: "перекачают этот объем",
+            items: "литров воды", unit: "л/ч"
+        }
+    ];
+
     function generateWorkTask() {
-        const d = workScenarios[Math.floor(Math.random() * workScenarios.length)];
+        const d = workScenarios[rand(0, workScenarios.length - 1)];
+        const theme = workThemes[rand(0, workThemes.length - 1)];
+
         return {
-            text: `Первый мастер может изготовить <b>${d.V} деталей</b> за <b>${d.t1} ч</b>, а второй мастер может изготовить эти же детали за <b>${d.t2} ч</b>. За сколько часов они изготовят эту партию деталей, работая вместе?`,
+            text: `${theme.a1} может ${theme.action1} <b>${d.V} ${theme.items}</b> за <b>${d.t1} ч</b>, а ${theme.a2} может ${theme.action2} за <b>${d.t2} ч</b>. За сколько часов они ${theme.action3}, работая вместе?`,
             steps: [
                 {
-                    text: "1) Производительность первого мастера:",
+                    text: `1) Производительность (${theme.a1.toLowerCase()}а):`,
                     combos: [ [d.V.toString(), ":", d.t1.toString()] ],
-                    result: d.p1, unit: "дет./ч",
-                    chips: [d.V.toString(), d.t1.toString(), ":", "-", "·", d.t2.toString()]
+                    result: d.p1, unit: theme.unit,
+                    // Ложные: t2, сложение
+                    chips: [...new Set([d.V.toString(), d.t1.toString(), ":", "-", "·", "+", d.t2.toString(), (d.V - d.t1).toString()])]
                 },
                 {
-                    text: "2) Производительность второго мастера:",
+                    text: `2) Производительность (${theme.a2.toLowerCase()}а):`,
                     combos: [ [d.V.toString(), ":", d.t2.toString()] ],
-                    result: d.p2, unit: "дет./ч",
-                    chips: [d.V.toString(), d.t2.toString(), ":", "-", "+", d.t1.toString()]
+                    result: d.p2, unit: theme.unit,
+                    // Ложные: t1, p1 из предыдущего шага
+                    chips: [...new Set([d.V.toString(), d.t2.toString(), ":", "-", "+", "·", d.t1.toString(), d.p1.toString(), (d.V - d.t2).toString()])]
                 },
                 {
                     text: "3) Совместная производительность:",
@@ -315,14 +345,16 @@
                         [d.p1.toString(), "+", d.p2.toString()],
                         [d.p2.toString(), "+", d.p1.toString()]
                     ],
-                    result: d.p_tot, unit: "дет./ч",
-                    chips: [d.p1.toString(), d.p2.toString(), "+", "-", "·", d.V.toString()]
+                    result: d.p_tot, unit: theme.unit,
+                    // Ложные: вычитание (кто-то ломает), V, t1
+                    chips: [...new Set([d.p1.toString(), d.p2.toString(), "+", "-", "·", ":", d.V.toString(), Math.abs(d.p1 - d.p2).toString(), d.t1.toString()])]
                 },
                 {
                     text: "4) Время совместной работы:",
                     combos: [ [d.V.toString(), ":", d.p_tot.toString()] ],
                     result: d.t_both, unit: "ч",
-                    chips: [d.V.toString(), d.p_tot.toString(), ":", "-", "·", d.t1.toString()]
+                    // Ложные: p1, p2 (чтобы не путали производительность с общим), t1, t2
+                    chips: [...new Set([d.V.toString(), d.p_tot.toString(), ":", "-", "·", "+", d.p1.toString(), d.p2.toString(), d.t1.toString(), d.t2.toString()])]
                 }
             ]
         };
@@ -338,7 +370,6 @@
     function renderBuilder() {
         const area = document.getElementById('builder-area');
         
-        // Экран полного успеха после двух задач
         if (currentTaskIndex >= tasksQueue.length) {
             document.getElementById('task-display').style.display = 'none';
             document.getElementById('progress-badge').style.display = 'none';
@@ -346,7 +377,7 @@
             area.innerHTML = `
                 <div class="success-screen">
                     <h3>Блестяще! 🏆</h3>
-                    <p>Вы успешно решили оба типа сложных задач.</p>
+                    <p style="font-size: 1.2rem; color: #555;">Вы успешно решили оба типа сложных задач.</p>
                 </div>
             `;
             let progress = JSON.parse(localStorage.getItem('vpr_progress')) || {};
@@ -382,7 +413,7 @@
         html += `
                     <div class="equal-sign">=</div>
                     <div class="step-input-wrapper">
-                        <input type="number" id="step-answer" class="step-input" autocomplete="off">
+                        <input type="text" id="step-answer" class="step-input" autocomplete="off">
                         <span class="unit-label">${step.unit}</span>
                     </div>
                 </div>
@@ -390,6 +421,7 @@
                 <div class="chips-container" id="chips-container">
         `;
 
+        // Перемешиваем плашки
         let shuffledChips = [...step.chips].sort(() => Math.random() - 0.5);
         shuffledChips.forEach((chipText, index) => {
             html += `<div class="chip" id="chip-${index}" onclick="useChip('${chipText}', 'chip-${index}')">${chipText}</div>`;
@@ -429,7 +461,6 @@
         slot.classList.remove('filled');
     }
 
-    // Функция для перехода к следующей задаче
     function startNextTask() {
         currentTaskIndex++;
         currentStepIndex = 0;
@@ -439,7 +470,8 @@
     function checkStep() {
         let slots = document.querySelectorAll('.slot');
         let userArr = Array.from(slots).map(s => s.textContent);
-        let userInputStr = document.getElementById('step-answer').value.trim();
+        let userInputRaw = document.getElementById('step-answer').value.trim();
+        let userInputStr = userInputRaw.replace(',', '.');
         
         let task = tasksQueue[currentTaskIndex];
         let step = task.steps[currentStepIndex];
@@ -451,8 +483,8 @@
             return;
         }
         
-        if (userInputStr === '') {
-            feedback.textContent = "Впишите ответ для этого действия!";
+        if (userInputRaw === '' || isNaN(userInputStr)) {
+            feedback.textContent = "Впишите числовой ответ для этого действия!";
             feedback.style.color = '#e67e22';
             document.getElementById('step-answer').focus();
             return;
@@ -462,7 +494,7 @@
         let isAnswerCorrect = (parseFloat(userInputStr) === step.result);
 
         if (!isComboCorrect) {
-            feedback.textContent = "Выражение составлено неверно. Подумай ещё раз!";
+            feedback.textContent = "Выражение составлено неверно. Внимательнее с числами и знаками!";
             feedback.style.color = 'var(--error)';
         } else if (!isAnswerCorrect) {
             feedback.textContent = "Выражение верное, но в расчетах допущена ошибка!";
@@ -472,10 +504,8 @@
         } else {
             currentStepIndex++;
             
-            // Проверяем, закончены ли шаги в текущей задаче
             if (currentStepIndex >= task.steps.length) {
                 if (currentTaskIndex === 0) {
-                    // Конец ПЕРВОЙ задачи -> показываем промежуточный экран
                     const area = document.getElementById('builder-area');
                     area.innerHTML = `
                         <div class="success-screen" style="margin-top: 2rem;">
@@ -483,23 +513,27 @@
                             <p style="font-size: 1.2rem; color: #555; margin-bottom: 2rem;">
                                 Вы успешно собрали все действия и вычислили правильный ответ.
                             </p>
-                            <button class="action-btn" onclick="startNextTask()" style="max-width: 300px;">
+                            <button class="action-btn" onclick="startNextTask()">
                                 Перейти ко второй задаче
                             </button>
                         </div>
                     `;
                 } else {
-                    // Конец ВТОРОЙ задачи -> переходим к финальному экрану успеха
                     currentTaskIndex++;
                     currentStepIndex = 0;
                     renderBuilder();
                 }
             } else {
-                // Переход к следующему шагу текущей задачи
                 renderBuilder();
             }
         }
     }
+
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && e.target.classList.contains('step-input')) {
+            checkStep();
+        }
+    });
 
     window.onload = initLevel;
 </script>
